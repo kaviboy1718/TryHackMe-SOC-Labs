@@ -117,3 +117,117 @@ To prevent similar incident vectors, the following enterprise security controls 
 ![TryHackMe Badge]
 
 <img width="1365" height="646" alt="9" src="https://github.com/user-attachments/assets/ff63af0d-b32c-4459-9df2-e835f78cdd94" />
+
+
+
+# ⚙️ Threat Analysis & System Hardening: Systems as Attack Vectors
+
+**Author:** [Kavindu Madhushan / kaviboy1718]   
+**Platform:** TryHackMe  
+**Category:** Defensive Security / SOC Operations / Vulnerability Management  
+**Completion Status:** 100% Complete  
+
+---
+
+## 📋 Executive Summary
+
+Unpatched software, weak authentication, legacy network appliances, and compromised software supply chains represent primary attack vectors targeting enterprise infrastructure. This lab simulated a SOC Analyst tasked with identifying system vulnerabilities, triaging active exploitation alerts, containing supply chain compromises, and establishing hardening policies to mitigate technical exposure.
+
+---
+
+## 🔍 Incident Triage & System Vulnerability Analysis
+
+### Summary Matrix
+
+| Incident ID | System Target | Threat Vector | Vulnerability / Root Cause | Mitigation Strategy |
+| :--- | :--- | :--- | :--- | :--- |
+| **SYS-01** | `HQ-MAIL-02` *(Exchange Server)* | Public Exploit Exposure | CVE-2024-49040 | Emergency Patching & Threat Hunting |
+| **SYS-02** | Corporate Website *(WordPress)* | Password Spraying / Brute-Force | Weak Admin Credentials | Credential Reset & Backdoor Removal |
+| **SYS-03** | London Edge Firewall *(Cisco)* | Legacy Hardware Vulnerability | Unpatched Firmware / EOL Device | Firmware Upgrade & Policy Auditing |
+| **SYS-04** | `LPT-01518` *(Designer Workstation)*| Software Supply Chain Attack | Malicious Third-Party Update | Application Containment & Rollback |
+
+---
+
+### Incident Breakdowns
+
+#### Incident 01: Exchange Mail Server Vulnerability (CVE-2024-49040)
+* **Target System:** `HQ-MAIL-02` *(Microsoft Exchange)*
+* **Description:** Penetration testing identified an internet-exposed Exchange server susceptible to CVE-2024-49040 exploitation.
+* **Analysis & Findings:** Applied immediate patch management protocols to remediate the vulnerability at the root level, followed by threat hunting queries to detect post-exploitation indicators prior to patch application.
+* **MITRE ATT&CK Mapping:** T1190 *(Exploit Public-Facing Application)*
+
+![Exchange Vulnerability Triage]
+
+<img width="667" height="647" alt="1" src="https://github.com/user-attachments/assets/e58f2f33-d786-4a61-9456-e4bb0fd646e8" />
+
+---
+
+#### Incident 02: CMS Defacement & Credential Compromise
+* **Target System:** Corporate WordPress Web Server
+* **Description:** Threat actors successfully brute-forced the WordPress administrative panel, replacing the landing page with malicious redirection links and gambling advertisements.
+* **Analysis & Findings:** Mitigated compromised administrative credentials, initialized website restoration from secure backups, and initiated web shell / persistence sweeps to locate left-behind backdoors.
+* **MITRE ATT&CK Mapping:** T1110 *(Brute Force)*, T1491 *(Defacement)*, T1505.003 *(Web Shell)*
+
+![WordPress Brute Force Analysis]
+
+<img width="666" height="642" alt="2" src="https://github.com/user-attachments/assets/401651e3-c641-4443-b8a0-a060cf1a365e" />
+
+---
+
+#### Incident 03: Proactive Threat Intel & Legacy Edge Hardening
+* **Target System:** London Office Cisco Firewall Appliance
+* **Description:** Threat Intelligence reported a neighboring organization compromised via ransomware originating from legacy Cisco firewall exploits.
+* **Analysis & Findings:** Performed an emergency device audit, located an outdated edge firewall in the London branch, and applied current vendor security patches before weaponized exploitation occurred.
+* **MITRE ATT&CK Mapping:** T1190 *(Exploit Public-Facing Application)*, T1595 *(Active Scanning)*
+
+![Cisco Firewall Audit]
+
+<img width="670" height="647" alt="3" src="https://github.com/user-attachments/assets/bb47cac4-48f0-4581-a14e-fac963d946c6" />
+
+---
+
+#### Incident 04: Software Supply Chain Compromise
+* **Target System:** `LPT-01518` *(3D Designer Laptop)*
+* **Description:** Endpoint telemetry flagged anomalous activity; a trusted 3D design application executed unauthorized Windows Command Shell (`cmd.exe`) commands following a routine vendor update.
+* **Analysis & Findings:** Identified as a trusted vendor supply chain compromise (`T1195.002`). Isolated the workstation process to prevent lateral movement.
+* **MITRE ATT&CK Mapping:** T1195.002 *(Supply Chain Compromise)*, T1059.003 *(Windows Command Shell)*
+
+![Supply Chain Incident Analysis]
+
+<img width="665" height="635" alt="4" src="https://github.com/user-attachments/assets/200171be-f0b2-4902-a3ba-e31844ba5493" />
+
+---
+
+### Phase Completion Verification
+![Systems at Risk Completed]
+
+<img width="667" height="647" alt="5" src="https://github.com/user-attachments/assets/b135c162-4569-45d2-a8ec-d33f48d58a27" />
+---
+
+## 🛡️ Enterprise Hardening & Remediation Framework
+
+To secure enterprise systems against recurring attack vectors, the following remediation policies were implemented:
+
+1. **Patch Management Policy:** Standardized vulnerability scanning and patch deployment cycles for public-facing assets and edge devices.
+2. **Secure Password Policy:** Mandated complex passphrases and account lockout limits to prevent brute-force attacks against administrative consoles.
+3. **Antivirus / Endpoint Protection:** Deployed host-based signatures and behavioral telemetry to detect data stealers, USB worms, and suspicious child process spawning.
+4. **Security Training for IT Personnel:** Educated system administrators on secure configuration standards and backdoor threat hunting.
+
+![Remediation Plan Feedback]
+
+<img width="671" height="645" alt="6" src="https://github.com/user-attachments/assets/0ce86d64-970e-4c74-965c-9552c2d7fdac" />  
+
+![Remediation Approved]
+
+<img width="662" height="646" alt="7" src="https://github.com/user-attachments/assets/a25763d9-afa7-42f5-b5c0-82a41f645dfc" />
+---
+
+## 📊 Lab Artifacts & Proof of Completion
+
+![Dashboard 100% Completion]
+
+<img width="663" height="647" alt="8" src="https://github.com/user-attachments/assets/a632bca8-7f6e-4674-b4a7-009eb7e12a61" />  
+
+![TryHackMe Completion Badge]
+
+<img width="1364" height="645" alt="9" src="https://github.com/user-attachments/assets/2521ef3f-3e2d-40d5-870d-d0483f4a35c6" />
