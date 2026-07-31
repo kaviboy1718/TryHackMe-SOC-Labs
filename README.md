@@ -243,7 +243,10 @@ This repository documents the end-to-end triage, investigation, and disposition 
 
 ## 🖥️ SOC Dashboard Initial State
 
-![SOC Alert Dashboard Overview](images/5.1_3.png)
+![SOC Alert Dashboard Overview]
+
+<img width="1218" height="641" alt="5 1" src="https://github.com/user-attachments/assets/338a46a6-a6a0-4401-98d5-7fa8820d08b3" />
+
 
 ---
 
