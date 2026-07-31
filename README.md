@@ -231,3 +231,112 @@ To secure enterprise systems against recurring attack vectors, the following rem
 ![TryHackMe Completion Badge]
 
 <img width="1364" height="645" alt="9" src="https://github.com/user-attachments/assets/2521ef3f-3e2d-40d5-870d-d0483f4a35c6" />
+
+
+
+# 🛡️ Enterprise SIEM Alert Triage & Incident Response
+
+## 📌 Overview
+This repository documents the end-to-end triage, investigation, and disposition of security alerts processed within an enterprise Security Operations Center (SOC) SIEM environment. The objective is to evaluate real-time telemetry, differentiate baseline corporate noise (**False Positives**) from genuine threat vectors (**True Positives**), and execute appropriate incident containment and remediation playbooks.
+
+---
+
+## 🖥️ SOC Dashboard Initial State
+
+![SOC Alert Dashboard Overview](images/5.1_3.png)
+
+---
+
+## 📊 Shift Summary Matrix
+
+| Alert Timestamp | Alert Name | Severity | Targeted Host / User | Verdict | Final Disposition | Assigned Analyst |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Mar 21, 11:53** | Bruteforce Attack from External | Medium | Gateway Perimeter | **True Positive** | Closed | J.Adams (L2) |
+| **Mar 21, 12:40** | Unusual VPN Login Location | Medium | `M.Clark` | **False Positive** | Closed | T.Ross (L1) |
+| **Mar 21, 13:02** | Download from GitHub Repository | Low | `LPT-IT-063` (`G.Chandler`) | **False Positive** | Closed | You (L1) |
+| **Mar 21, 13:30** | Potential Data Exfiltration | Critical | `UK04/MEETINGROOM` | **False Positive** | Closed | You (L1) |
+| **Mar 21, 13:58** | Double-Extension File Creation | High | `LPT-HR-009` (`S.Conway`) | **True Positive** | Closed / Contained | You (L1) |
+
+---
+
+## 🔍 Detailed Alert Investigations & Evidence
+
+### 1. Potential Data Exfiltration
+* **Timestamp:** Mar 21st 2025 at 13:30
+* **Severity:** Critical
+* **Source Network / IP:** `UK04/MEETINGROOM` | `192.168.45.66`
+* **Destination:** `*.zoom.us`
+* **Data Transferred:** 5.8 GB Sent / 5.2 GB Received
+* **Verdict:** **False Positive**
+
+#### Investigation & Summary
+The SIEM triggered a threshold alert for sending >5 GB of data in a day. Forensic investigation revealed the traffic originated from an internal meeting room network (`UK04/MEETINGROOM`) and was directed exclusively to a trusted enterprise domain (`*.zoom.us`). The balanced ratio of uploaded to downloaded data (5.8 GB vs 5.2 GB) indicates high-definition video conferencing activity rather than malicious exfiltration.
+
+![Potential Data Exfiltration Closed Ticket]
+
+<img width="1218" height="425" alt="5 2" src="https://github.com/user-attachments/assets/5a7866fa-8ab8-42e2-a323-828d8e8a9bda" />
+
+
+---
+
+### 2. Double-Extension File Creation
+* **Timestamp:** Mar 21st 2025 at 13:58
+* **Severity:** High
+* **Source Host / User:** `LPT-HR-009` | `S.Conway`
+* **Process:** `chrome.exe`
+* **Target File:** `C:\Users\S.Conway\Downloads\cats2025.mp4.exe`
+* **File MotW / URL:** `https://freecatvideoshd.monster/cats2025.mp4.exe`
+* **File MD5:** `14d8486f3f63875ef93cfd240c5dc10b`
+* **Verdict:** **True Positive**
+
+#### Investigation & Escalation
+A user downloaded an executable file disguised with a double extension (`cats2025.mp4.exe`) via Google Chrome from a suspicious top-level domain (`.monster`). This represents a classic social engineering technique (T1036.007 Masquerading) to bypass user awareness and trigger arbitrary code execution.
+
+1. **Initial Alert Snapshot:**
+   ![Double Extension Alert Overview]
+
+   <img width="1216" height="370" alt="5 3" src="https://github.com/user-attachments/assets/a0eef889-bfa1-4798-9a10-62a2096b423a" />
+
+
+3. **Remediation & Closure:**
+   Host `LPT-HR-009` was targeted for network isolation and endpoint containment to prevent payload execution. Active Directory credentials for `S.Conway` were queued for reset.
+
+   ![Double Extension Closed Ticket]
+
+   <img width="1220" height="460" alt="5 4" src="https://github.com/user-attachments/assets/08efa945-9d6d-4934-8f5d-5c89290b650f" />
+
+
+---
+
+### 3. Download from GitHub Repository
+* **Timestamp:** Mar 21st 2025 at 13:02
+* **Severity:** Low
+* **Source Network / Host:** `VPN/DEVELOPERS` | `LPT-IT-063`
+* **User:** `G.Chandler`
+* **Accessed URL:** `https://github.com/facebook/react`
+* **Verdict:** **False Positive**
+
+#### Investigation & Tuning
+The SIEM flagged an external code repository download. Reviewing contextual logs confirmed that the request originated from the developer network segment (`VPN/DEVELOPERS`) accessing Meta's official open-source React framework (`facebook/react`). This is normal baseline behavior for internal engineers.
+
+1. **Initial Alert Snapshot:**
+   ![GitHub Download Alert Details]
+
+   <img width="1220" height="304" alt="5 5" src="https://github.com/user-attachments/assets/360cde8e-e371-463a-821d-d40ae3418a8b" />
+
+
+3. **Remediation & Closure:**
+   Closed as a False Positive. Recommended white-listing official corporate developer repositories to reduce SIEM alert noise.
+
+   ![GitHub Download Closed Ticket]
+
+   <img width="1214" height="389" alt="5 6" src="https://github.com/user-attachments/assets/0cd71d3e-2aea-4ab9-867e-dc8fb50e6afd" />
+
+
+---
+
+## 🏆 Lab Completion & Performance Summary
+
+![Room Completed Badge]
+
+<img width="1365" height="646" alt="6" src="https://github.com/user-attachments/assets/71b8367e-64e4-4b91-a136-f8711eee7847" />
