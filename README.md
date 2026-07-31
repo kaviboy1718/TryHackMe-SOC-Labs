@@ -343,3 +343,97 @@ The SIEM flagged an external code repository download. Reviewing contextual logs
 ![Room Completed Badge]
 
 <img width="1365" height="646" alt="6" src="https://github.com/user-attachments/assets/71b8367e-64e4-4b91-a136-f8711eee7847" />
+
+
+
+# 🛡️ Enterprise SIEM Alert Triage & Incident Investigation
+
+## 📌 Overview
+This repository documents the end-to-end triage, analysis, and escalation of security alerts captured during a simulated shift within an enterprise Security Operations Center (SOC). The shift involved analyzing email security breaches, active host compromise, process execution trees, and Active Directory reconnaissance.
+
+---
+
+## 🖥️ SOC Dashboard Overview
+
+![SOC Alert Dashboard Overview]
+
+<img width="1286" height="366" alt="1 1" src="https://github.com/user-attachments/assets/388d851c-b01f-4cc2-9ebe-8a60ea9995d2" />
+
+---
+
+## 📊 Shift Summary Matrix
+
+| Alert Timestamp | Alert Name | Severity | Targeted Host / Recipient | Verdict | Status | Assigned Analyst |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Mar 27, 18:02** | Fast Beaconing to Untrusted Domain | High | Internal Network | **False Positive** | Closed | S.Todd (L1) |
+| **Mar 27, 18:30** | Sensitive Document Share to External | Medium | Enterprise Data | **True Positive** | In Progress | E.Fleming (L2) |
+| **Mar 27, 19:10** | Web Scanning of Corporate Resources | Low | Web Infrastructure | **True Positive** | In Progress | E.Fleming (L2) |
+| **Mar 27, 19:25** | Email Marked as Phishing after Delivery | Medium | `e.huffman@tryhackme.thm` | **True Positive** | In Progress | You (L1) |
+| **Mar 27, 19:56** | Spike of Domain Discovery Commands | Medium | `DMZ-MSEXCHANGE-2013` | **True Positive** | In Progress / Escalated | E.Fleming (L2) |
+
+---
+
+## 🔍 Detailed Alert Investigations & Evidence
+
+### 1. Email Marked as Phishing after Delivery
+* **Timestamp:** Mar 27th 2025 at 19:25
+* **Severity:** Medium
+* **Target Recipient:** Eddie Huffman, IT Manager (`e.huffman@tryhackme.thm`)
+* **Header Sender:** `Microsoft Support <support@microsoft.com>`
+* **Authentication Checks:** **SPF: Fail** | **DKIM: Fail**
+* **Attachment:** `REPORT.rar`
+* **Verdict:** **True Positive**
+
+#### Investigation Details
+An automated post-delivery check flagged a social engineering attempt impersonating Microsoft Support regarding an urgent "600% price increase" for Microsoft Teams. Email header inspection confirmed complete failure of both **SPF** and **DKIM** authentication protocols, indicating identity spoofing. The email contained a malicious archive file (`REPORT.rar`).
+
+1. **Alert Details & Indicators:**
+   ![Phishing Alert Details]
+
+   <img width="1287" height="402" alt="1 2" src="https://github.com/user-attachments/assets/01ae6bce-69ce-4f9a-8247-2ece5e78c13a" />
+
+
+3. **Triage & Analyst Actions:**
+   Marked as True Positive. Queued for immediate inbox purge, attachment hash extraction, and domain blocking at the secure email gateway (SEG).
+
+   ![Phishing Ticket Resolution]
+
+   <img width="670" height="484" alt="1 3" src="https://github.com/user-attachments/assets/fc043e58-9345-4877-81df-ebf17acb8d3b" />
+
+
+---
+
+### 2. Spike of Domain Discovery Commands (Host Compromise)
+* **Timestamp:** Mar 27th 2025 at 19:56
+* **Severity:** Medium / High Escalation
+* **Target Host:** `DMZ-MSEXCHANGE-2013` (Windows Server 2012 R2)
+* **Account:** `NT AUTHORITY\SYSTEM`
+* **Process Hierarchy:** `w3wp.exe` → `revshell.exe` → `cmd.exe`
+* **Commands Invoked:** `dir`, `hostname`, `whoami /priv`, `net group "Domain Admins" /domain`, `nltest /dclist:tryhackme.thm`
+* **Verdict:** **True Positive**
+
+#### Investigation & Incident Escalation
+Process lineage analysis revealed that the IIS Web Server process (`w3wp.exe`) spawned an unauthorized backdoor executable (`revshell.exe`) located in `C:\Users\Public\`. Under `NT AUTHORITY\SYSTEM` privileges, the process executed multiple commands to map Active Directory structure and query Domain Admin groups.
+
+1. **Process Lineage & Command Details:**
+   ![Domain Discovery Alert Details]
+
+   <img width="1281" height="422" alt="2 1" src="https://github.com/user-attachments/assets/5b720364-7bfe-4a63-83e4-050025f86cd9" />
+
+
+3. **Incident Response Actions:**
+   Escalated immediately to L2 Incident Response. Initiated host network isolation on `DMZ-MSEXCHANGE-2013` to prevent lateral movement and credential dumping across the domain.
+
+   ![Domain Discovery Escalation Note]
+
+   <img width="1275" height="489" alt="2 2" src="https://github.com/user-attachments/assets/3a2bd709-8bd2-41ab-bcf0-de857b218d04" />
+
+
+---
+
+## 🏆 Lab Completion Summary
+
+![Room Completed Badge]
+
+<img width="1362" height="646" alt="3" src="https://github.com/user-attachments/assets/d7799ffc-f9df-48ee-8fc0-f23bf075b147" />
+
