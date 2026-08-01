@@ -437,3 +437,92 @@ Process lineage analysis revealed that the IIS Web Server process (`w3wp.exe`) s
 
 <img width="1362" height="646" alt="3" src="https://github.com/user-attachments/assets/d7799ffc-f9df-48ee-8fc0-f23bf075b147" />
 
+
+
+
+# 🛠️ Standardized SOC Playbooks & Workbooks Engineering
+
+## 📌 Overview
+This repository documents the design and implementation of standardized **Security Operations Center (SOC) Workbooks & Playbooks**. The objective of this project is to build structured, repeatable incident triage workflows for Tier 1 and Tier 2 analysts—ensuring rapid triage, proper evidence collection, accurate verdict determination, and appropriate escalation paths across critical attack vectors.
+
+---
+
+## 🗂️ Standardized Playbook Architecture
+
+### 📧 Workbook 01: External Email With Script or Binary Attachment (Email Analysis)
+Focuses on evaluating suspicious incoming emails, parsing headers, verifying sender authenticity, and analyzing risky attachments.
+
+#### Action Builder & Decision Logic
+1. **Initial Context:** Take ownership of the alert and use identity inventory to gather recipient context and roles.
+2. **Header & Domain Triage:** Analyze the email via EML analyzer—verify SPF/DKIM authentication, inspect body content, and check sender domain reputation.
+3. **Attachment Inspection:** Perform manual code review for scripts or execute binary attachments in a isolated sandbox environment.
+4. **Verdict Decision Branch:**
+   * **YES (Malicious/Faked/Unexpected):** Gather comprehensive triage evidence (recipient lists, sandbox report, EML analysis) $\rightarrow$ Draft detailed L2 alert report $\rightarrow$ **Escalate to L2 Incident Response**.
+   * **NO (Benign/Expected):** Document justification comment explaining why the email is safe $\rightarrow$ **Close as False Positive**.
+
+| Builder Interface | Completed Decision Flowchart |
+| :---: | :---: |
+| ![Email Builder]
+
+<img width="667" height="647" alt="1 1" src="https://github.com/user-attachments/assets/a8298664-2253-46ce-a857-91fba275d043" />
+
+| ![Email Flowchart]
+
+<img width="593" height="548" alt="1 3" src="https://github.com/user-attachments/assets/76804c34-1c80-401a-bcd3-36efe12b3229" />
+
+
+---
+
+### ⚡ Workbook 02: Executable File Download using PowerShell (Endpoint Analysis)
+Focuses on triaging command-line payload downloads, inspecting process hierarchies, and distinguishing legitimate administrative scripting from malicious staging.
+
+#### Action Builder & Decision Logic
+1. **Asset & Identity Mapping:** Assign alert, look up host context in asset inventory, and identify logged-in users.
+2. **Threat Intelligence & Static Analysis:** Analyze payload download URLs against Threat Intel feeds and perform static file analysis on downloaded binaries.
+3. **Process Tree Reconstruction:** Build the execution tree to identify parent processes (`cmd.exe`, `w3wp.exe`, etc.) and execution privilege levels.
+4. **Verdict Decision Branch:**
+   * **YES (Malicious/Untrusted/Suspicious Process):** Save SIEM search outputs (`[WIN] Process Tree` and `[WIN] LoginTimeline`) $\rightarrow$ Compile L2 report with assumptions and evidence $\rightarrow$ **Escalate to L2**.
+   * **NO (Authorized Admin/Tuned Script):** Document findings and submit tuning recommendations to SOC Engineers $\rightarrow$ **Close as False Positive**.
+
+| Builder Interface | Completed Decision Flowchart |
+| :---: | :---: |
+| ![PowerShell Builder]
+
+<img width="668" height="647" alt="2 1" src="https://github.com/user-attachments/assets/02ae850e-6900-407b-af5d-0279448b3c5a" />
+
+ ![PowerShell Flowchart]
+
+ <img width="1280" height="853" alt="2 3" src="https://github.com/user-attachments/assets/a889fb85-2984-419f-841d-2a8792602c17" />
+
+
+---
+
+### 🌐 Workbook 03: Port Scanning From Internal IP (Network Analysis)
+Focuses on internal discovery detection, separating authorized corporate scanner activity (e.g., Nessus, Zabbix) from rogue host discovery attempts.
+
+#### Action Builder & Decision Logic
+1. **Network Mapping:** Take ownership, retrieve IP location, role, and subnet context from asset inventory/network maps.
+2. **Port & Service Profiling:** List target ports scanned by the source IP and map associated services.
+3. **Authorized Scanner Verification:** Cross-reference source IP against baseline inventory for approved vulnerability/monitoring engines.
+4. **Verdict Decision Branch:**
+   * **YES (Unlisted IP / Malicious Discovery Pattern):** Collect attack timeframe, target port list, and network context $\rightarrow$ Draft L2 incident report $\rightarrow$ **Escalate to L2**.
+   * **NO (Authorized Enterprise Scanner):** Document verdict comment and notify SOC Engineers to tune SIEM detection thresholds $\rightarrow$ **Close as False Positive**.
+
+| Builder Interface | Completed Decision Flowchart |
+| :---: | :---: |
+| ![Network Builder]
+
+<img width="644" height="536" alt="3 1" src="https://github.com/user-attachments/assets/87f95e0f-515f-4cf9-a575-639f46b73172" />
+
+ ![Network Flowchart]
+
+ <img width="598" height="520" alt="3 3" src="https://github.com/user-attachments/assets/a5e68f45-c5ef-43e2-b9e4-ba25b05f3d52" />
+
+
+---
+
+## 🏆 Lab Completion & SLA Metrics
+
+![Room Completed Badge]
+
+<img width="1364" height="645" alt="4" src="https://github.com/user-attachments/assets/5f7b696f-4fb1-44f8-830c-42a7d5b066a2" />
