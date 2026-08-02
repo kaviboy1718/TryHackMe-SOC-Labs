@@ -610,3 +610,98 @@ This repository documents the operational audit, metric analysis, and process op
 ![SOC SLA Completion Badge]
 
 <img width="1365" height="647" alt="4" src="https://github.com/user-attachments/assets/1f661dc9-4ea3-487b-8fc3-55a062cf8ab3" />
+
+
+
+
+# 🛡️ Cybersecurity Portfolio: Incident Response & Alert Triage
+Platform: TryHackMe  
+Status: 🎖️ Completed  
+---
+## 📊 Performance Summary
+During this Security Operations Center (SOC) simulation lab, I investigated a queue of five high-priority security alerts involving network firewalls and corporate email systems. By analyzing domain infrastructure, network telemetry, and social engineering indicators, I successfully triaged every alert with perfect accuracy, mitigating active threats while minimizing alert fatigue.
+---
+## 🔍 Detailed Case Breakdowns
+### 🚨 Case 1: Access to Blacklisted External URL (Firewall Alert)
+
+| Attribute | Detail |
+| :--- | :--- |
+| Incident Classification | True Positive |
+| Source Host | 10.20.2.17 |
+| Destination Connection | 67.199.248.11 |
+| Flagged Hyperlink | http://bit.ly/3sHkX3da12340 |
+| Escalation Required | Yes |
+
+* Analysis & Rationale: An internal workstation initiated an outbound connection targeting a known malicious infrastructure destination matching active threat intelligence blacklist feeds.
+* Escalation Justification: The request involves direct interaction with a high-risk external link shortener (bit.ly). While the perimeter firewall successfully blocked the outbound traffic flow, tier-2 escalation is necessary to analyze the endpoint for potential local malware persistence or follow-up execution payloads.
+* Remediation Actions: 
+  1. Temporarily isolate the host machine at 10.20.2.17 from the local network segment.
+  2. Execute a comprehensive endpoint antivirus/EDR scan.
+  3. Clear local browser caches and coordinate quick security awareness guidance with the user.
+* Attack Indicators: Threat intelligence blacklist signature match; URL shortener obfuscation.
+---
+### 🚨 Case 2: Suspicious External Link (Amazon Spoofing)
+
+| Attribute | Detail |
+| :--- | :--- |
+| Incident Classification | True Positive |
+| Target Recipient | h.harris@thetrydaily.thm |
+| Malicious Sender | urgents@amazon.biz |
+| Obfuscated Link | http://bit.ly/3sHkX3da12340 |
+| Escalation Required | Yes |
+
+* Analysis & Rationale: The inbound email exhibits standard characteristics of a brand-spoofing social engineering campaign. The adversary utilized an unauthorized top-level domain (.biz) to mimic a trusted delivery service, created artificial high urgency ("within 48 hours"), and leveraged an obfuscated bit.ly link to hide the final credential harvesting page.
+* Escalation Justification: The malicious template successfully bypassed the corporate perimeter email filter to land directly in a user inbox. Escalation is mandatory to run a tenant-wide message trace and purge identical elements from other employee mailboxes.
+* Remediation Actions: Deploy a permanent gateway block on the amazon.biz sender domain and run an active indicator check across proxy logs to ensure the link wasn't clicked prior to triage.
+* Attack Indicators: Unauthorized sender TLD; delivery failure decoy theme; obfuscated redirection link.
+---
+### 🛡️ Case 3: Suspicious External Link (HR Onboarding - Alert 8818)
+
+| Attribute | Detail |
+| :--- | :--- |
+| Incident Classification | False Positive |
+| Target Recipient | j.garcia@thetrydaily.thm |
+| Legitimate Sender | onboarding@hrconnex.thm |
+| Verified URL | https://hrconnex.thm/onboarding/15400654060/j.garcia |
+| Escalation Required | No |
+
+* Analysis & Rationale: The system generated an alert on a legitimate, automated human resources notification sequence. Both the sender profile and the embedded registration links map directly to verified corporate partner domain infrastructure (hrconnex.thm). No external redirections or suspicious elements are present.
+* Remediation Actions: Close the alert case as a benign False Positive. No further containment steps required.
+---
+### 🚨 Case 4: Suspicious External Link (Microsoft Typosquatting)
+| Attribute | Detail |
+| :--- | :--- |
+| Incident Classification | True Positive |
+| Target Recipient | c.allen@thetrydaily.thm |
+| Malicious Sender | noreply@m1crosoftsupport.co |
+| Harvesting URL | https://m1crosoftsupport.co/login |
+| Escalation Required | Yes |
+
+* Analysis & Rationale: This alert captures a severe, highly targeted credential harvesting vector. The malicious sender used a visible typosquatting technique (substituting the number 1 for the letter i in m1crosoft) and an unauthorized .co domain. The email utilized an "Unusual Sign-In Activity" panic decoy to force the user to click a fraudulent login panel.
+* Escalation Justification: Because the email reached the inbox, urgent escalation is required to audit network logs and ensure the employee did not supply corporate credentials to the malicious site.
+* Remediation Actions: Implement an immediate tenant-wide block on m1crosoftsupport.co, execute a search-and-destroy action to sweep the template from all corporate mailboxes, and enforce a proactive password reset for c.allen.
+* Attack Indicators: Typosquatting domain structure; urgent security alert theme; malicious external login interface.
+---
+### 🛡️ Case 5: Suspicious External Link (HR Onboarding - Baseline Alert)
+
+| Attribute | Detail |
+| :--- | :--- |
+| Incident Classification | False Positive |
+| Target Recipient | Internal Corporate User |
+| Legitimate Sender | onboarding@hrconnex.thm |
+| Verified URL | https://hrconnex.thm/onboarding/... |
+| Escalation Required | No |
+
+* Analysis & Rationale: This baseline administrative event tracked standard profile setup messages. The email signatures, sender address routing, and hyperlinked destinations align perfectly with authorized internal environment white-lists, validating safe operations rather than an active compromise threat.
+* Remediation Actions: Close the case in the SIEM dashboard as a False Positive. No further operational adjustments necessary.
+---
+## 🏆 Verified Credentials & Milestones
+The following official platform milestone was successfully achieved upon final triage submission, confirming validation accuracy across the entire incident queue:
+
+| Badge Achievement | Verification Objective | Performance Metric |
+| :--- | :--- | :--- |
+| 🏅 100% True Positive Rate | Flawless validation and escalation routing across all 5 operational cases. | 100% Accuracy Score |
+
+> *Note: Verification milestone badge has been logged and archived alongside these technical documentation case logs.*
+
+<img width="757" height="520" alt="3" src="https://github.com/user-attachments/assets/7b3fb539-0210-4af3-859f-d172ef705304" />
