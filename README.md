@@ -526,3 +526,87 @@ Focuses on internal discovery detection, separating authorized corporate scanner
 ![Room Completed Badge]
 
 <img width="1364" height="645" alt="4" src="https://github.com/user-attachments/assets/5f7b696f-4fb1-44f8-830c-42a7d5b066a2" />
+
+
+
+# 📊 SOC Metrics, SLAs & Operational Optimization
+
+## 📌 Overview
+This repository documents the operational audit, metric analysis, and process optimization strategies executed during the **SOC Metrics and Objectives** lab. The project focuses on diagnosing core performance bottlenecks across Security Operations Center (SOC) metrics—specifically **Time to Respond (TTR)**, **Time to Detect (TTD)**, and **False Positive Rate (FPR)**—and engineering remediation workflows to optimize incident response SLAs and mitigate analyst fatigue.
+
+---
+
+## 🗂️ Operational Scenarios & Remediation Framework
+
+### 🚨 Scenario 01: High Containment Latency (Unhappy Customer)
+* **Incident Summary:** A critical compromise of an executive's Entra ID and mailbox resulted in data exfiltration due to a 6-hour delay in account containment (5 hours lost strictly on resetting credentials and MFA).
+* **Problematic Metric:** **Time to Respond (TTR)** — Containment execution took too long due to a lack of standard credential rotation procedures.
+* **Remediation Plan:** Create a dedicated workbook detailing standardized credential rotation steps and present it to the team.
+* **Task Owner:** Assigned to the L2 Incident Response Lead who handled the incident.
+
+| Scenario Context | Remediation Action Plan |
+| :---: | :---: |
+| ![Scenario 1 Prompt]
+
+<img width="670" height="646" alt="1 1" src="https://github.com/user-attachments/assets/2faf10a1-8f3f-4eed-99e1-c0e6b2ddb8a6" />
+ 
+ ![Scenario 1 Solution]
+
+ <img width="1024" height="773" alt="1 2 (1)" src="https://github.com/user-attachments/assets/c46518ba-b80d-4969-b35a-9896f0f132ae" />
+
+
+---
+
+### ⏳ Scenario 02: Delayed SIEM Detection (Delayed Alert)
+* **Incident Summary:** During a ransomware simulation, threat containment succeeded in 40 minutes, but the first 20 minutes were lost waiting for the SIEM detection rules to trigger and generate alerts.
+* **Problematic Metric:** **Time to Detect (TTD)** — A 20-minute detection schedule delayed initial alert triage.
+* **Remediation Plan:** Tune the SIEM and detection rules to run more frequently at 5-minute intervals.
+* **Task Owner:** Assigned detection rule schedule review to the dedicated SOC engineer.
+
+| Scenario Context | Remediation Action Plan |
+| :---: | :---: |
+| ![Scenario 2 Prompt]
+
+<img width="666" height="647" alt="2 1" src="https://github.com/user-attachments/assets/df96d35a-5cb7-4173-a996-a438d0679501" />
+
+| ![Scenario 2 Solution]
+
+<img width="1534" height="909" alt="2 2 (1)" src="https://github.com/user-attachments/assets/3766bba5-f9b2-469c-8c39-13ee21c3371c" />
+
+
+---
+
+### 🥱 Scenario 03: Alert Fatigue & High Noise (Tired Analysts)
+* **Incident Summary:** L1 analysts were processing 760 alerts per shift, with 95% categorized as benign IT system noise or automation scripts, causing operational exhaustion.
+* **Problematic Metric:** **False Positive Rate (FPR)** — High signal-to-noise ratio causing analyst burnout.
+* **Remediation Plan:** Schedule a call with the team to implement a structured False Positive remediation process.
+* **Task Owner:** Assigned detection rule schedule review and tuning to the dedicated SOC engineer.
+
+| Scenario Context | Remediation Action Plan |
+| :---: | :---: |
+| ![Scenario 3 Prompt]
+
+<img width="673" height="646" alt="3 1" src="https://github.com/user-attachments/assets/237318f2-1fc8-4ca7-a830-7270ab82d18c" />
+
+| ![Scenario 3 Solution]
+
+<img width="1024" height="889" alt="3 2 (1)" src="https://github.com/user-attachments/assets/933f4431-750a-4a1f-89b9-df866bc6e7f6" />
+
+
+---
+
+## 📈 Metric Optimization Summary Matrix
+
+| Metric Category | Root Cause | Target KPI Impact | Remediation Action |
+| :--- | :--- | :--- | :--- |
+| **Time to Respond (TTR)** | Unstandardized credential reset and MFA revoke workflows | Reduce containment latency from hours to minutes | Draft Credential Rotation Workbook |
+| **Time to Detect (TTD)** | Low-frequency SIEM scheduled detection queries | Cut detection lag from 20m down to 5m | Increase SIEM rule execution frequency |
+| **False Positive Rate (FPR)** | High noise ratio from benign IT scripts and tools (95%) | Drastically lower alert load per shift | Implement False Positive Remediation Process |
+
+---
+
+## 🏆 Lab Completion
+
+![SOC SLA Completion Badge]
+
+<img width="1365" height="647" alt="4" src="https://github.com/user-attachments/assets/1f661dc9-4ea3-487b-8fc3-55a062cf8ab3" />
