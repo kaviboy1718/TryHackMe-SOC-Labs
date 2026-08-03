@@ -705,3 +705,85 @@ The following official platform milestone was successfully achieved upon final t
 > *Note: Verification milestone badge has been logged and archived alongside these technical documentation case logs.*
 
 <img width="757" height="520" alt="3" src="https://github.com/user-attachments/assets/7b3fb539-0210-4af3-859f-d172ef705304" />
+
+
+
+# 🛡️ Endpoint Detection & Response (EDR) Investigation Walkthrough
+
+## 📌 Overview
+This repository documents the practical incident response and threat analysis performed during the **Introduction to EDR Web App** lab. The objective was to utilize an EDR console to investigate endpoint telemetry, analyze process execution trees, identify indicators of compromise (IoCs), trace malware staging, detect credential dumping, and evaluate threat intelligence to differentiate true security incidents from benign internal tools.
+
+---
+
+## 🗂️ Case File Investigations
+
+### 🔍 Case 01: Macro-Enabled Malware Staging (`DESKTOP-HR01`)
+* **Target User / Host:** `alice.thomas` | `DESKTOP-HR01`
+* **Timestamp:** Aug 4th, 2026 at 00:35
+* **Severity:** High
+* **Incident Analysis:**
+  * A macro-enabled Office document (`invoice.docm`) was opened via Microsoft Word (`WINWORD.EXE`).
+  * Word spawned `CMD.EXE`, which subsequently executed `cURL.EXE` to retrieve a payload from an external domain.
+  * The downloaded file (`install.exe`) was written to disk at `C:\Users\Public\install.exe`.
+  * The payload remained unexecuted on disk, indicating malware staging behavior.
+* **Key Artifacts:**
+  * **Downloader Tool:** `cURL.exe`
+  * **Payload Absolute Path:** `C:\Users\Public\install.exe`
+  * **Payload SHA256:** `9e107d9d372bbb6826bd81d3542a419d6eaf1e3f5b94fc3b1f69413c5c30ef2e5`
+
+| Alert Overview | Process Chain & File Path |
+| :---: | :---: |
+| ![Case 1 Summary] <img width="663" height="645" alt="1 1" src="https://github.com/user-attachments/assets/f68ad522-07c6-439c-ba6b-183e1e6568b2" /> |
+ | ![Case 1 Process Chain] <img width="1365" height="496" alt="1 2" src="https://github.com/user-attachments/assets/bc47c9f9-b31e-4e32-90f0-eea22fc3ac72" />
+ |
+
+---
+
+### 🚨 Case 02: LSASS Credential Dumping & Data Exfiltration (`WIN-ENG-LAPTOP03`)
+* **Target User / Host:** `haris.khan` | `WIN-ENG-LAPTOP03`
+* **Timestamp:** Aug 3rd, 2026 at 23:56
+* **Severity:** High
+* **Incident Analysis:**
+  * An unsigned binary named `syncsvc.exe` was executed from a temp directory.
+  * The process accessed `lsass.exe` to attempt a memory dump for credential harvesting.
+  * Persistence was configured via a Windows Registry Run Key (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run\syncsvc`).
+  * An attempt was made to exfiltrate the dumped memory payload (`dump_2025.dmp`) to an external file-sharing domain over HTTP, which was blocked by EDR controls.
+* **Key Artifacts:**
+  * **Suspicious Binary Path:** `C:\Users\haris.khan\AppData\Local\Temp\syncsvc.exe`
+  * **Exfiltration URL:** `https://files-wetransfer.com/upload/session/ab12cd34ef56/dump_2025.dm`
+  * **C2 / Exfiltration IP:** `100.42.28.64`
+
+| Alert Overview | IoC Breakdown | Network & Registry Activity |
+| :---: | :---: | :---: |
+| ![Case 2 Summary]<img width="666" height="645" alt="2 1" src="https://github.com/user-attachments/assets/cdd00fa9-cd87-4dcf-aca6-f3897cecb26b" /> | ![Case 2 IoCs]<img width="1359" height="375" alt="2 2" src="https://github.com/user-attachments/assets/2e9e7092-9187-46b1-ae9c-cde5b38355b9" /> | ![Case 2 Network]<img width="1365" height="335" alt="2 3" src="https://github.com/user-attachments/assets/a8d2cd61-27cb-464b-bee1-ee817a153ca9" /> |
+
+---
+
+### ℹ️ Case 03: False Positive Analysis — Internal IT Utility (`DESKTOP-DEV01`)
+* **Target User / Host:** `daniel.richards` | `DESKTOP-DEV01`
+* **Timestamp:** Aug 3rd, 2026 at 23:27
+* **Severity:** Medium
+* **Incident Analysis:**
+  * An unsigned binary `UpdateAgent.exe` located at `C:\Users\daniel.richards\AppData\Roaming\UpdateAgent.exe` initiated an outbound connection to an internal IP (`10.10.20.5:8080`).
+  * Upon cross-referencing EDR Threat Intelligence, the binary was categorized as a **Known internal IT utility tool**.
+  * *Verdict:* **False Positive** (Authorized internal IT software activity).
+
+| Alert Overview | Threat Intel Assessment |
+| :---: | :---: |
+| ![Case 3 Summary]<img width="663" height="646" alt="3 1" src="https://github.com/user-attachments/assets/830f0b66-cc48-4b5e-a1cf-f3fdb7693edd" /> | ![Case 3 Details]<img width="1362" height="645" alt="3 2" src="https://github.com/user-attachments/assets/ef66a427-a6cc-4415-8a67-d12a6e8c4da9" /> |
+
+---
+
+## 📊 Summary Matrix
+
+| Hostname | User | Severity | Detection Trigger | Primary Indicator / Artifact | Verdict |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `DESKTOP-HR01` | `alice.thomas` | High | Macro execution & cURL download | `C:\Users\Public\install.exe` | **True Positive** (Malware Staging) |
+| `WIN-ENG-LAPTOP03` | `haris.khan` | High | LSASS memory access & exfil attempt | `https://files-wetransfer.com/...` | **True Positive** (Credential Dumping) |
+| `DESKTOP-DEV01` | `daniel.richards` | Medium | Outbound HTTP from AppData folder | Threat Intel: *Known internal IT utility tool* | **False Positive** (Legitimate Tool) |
+
+---
+
+## 🏆 Completion
+
+![EDR Web App Completion]<img width="1365" height="646" alt="4" src="https://github.com/user-attachments/assets/b1f54766-f3cc-4180-87ed-ba18b137da18" />
