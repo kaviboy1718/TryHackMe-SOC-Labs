@@ -787,3 +787,81 @@ This repository documents the practical incident response and threat analysis pe
 ## 🏆 Completion
 
 ![EDR Web App Completion]<img width="1365" height="646" alt="4" src="https://github.com/user-attachments/assets/b1f54766-f3cc-4180-87ed-ba18b137da18" />
+
+
+
+
+# TryHackMe: Intro to SIEM - Security Analysis & Incident Response Walkthrough
+
+## Executive Summary
+This repository documents the hands-on completion and investigation performed in the **Intro to SIEM** lab on TryHackMe. The objective of this lab is to understand Security Information and Event Management (SIEM) architecture, analyze centralized logs, triage automated detection alerts, investigate process execution events, and perform containment actions against unauthorized cryptomining activity.
+
+---
+
+## 🛠️ Tools & Technologies
+* **Platform:** TryHackMe
+* **Technology:** SIEM (Security Information & Event Management)
+* **Log Types:** Windows Event Logs (`EventID 4688` - Process Creation)
+* **Concepts:** Alert Triage, Threat Hunting, Detection Rules, Incident Response (Host Isolation), True/False Positive Analysis
+
+---
+
+## 🔍 Incident Investigation & Walkthrough
+
+### 1. Alert Triage & Suspicious Process Detection
+Upon triggering the simulated attack, the SIEM generated an alert indicating potential cryptomining activity on the network.
+
+![SIEM Alert - CryptoMiner Activity Detected]<img width="1365" height="647" alt="1 1" src="https://github.com/user-attachments/assets/24f7b54a-d3c9-4fde-b9f7-a89d3c9a6755" />
+
+* **Triggered Alert:** `Potential CryptoMiner Activity Observed`
+* **Suspicious Process:** `cudominer.exe`
+
+---
+
+### 2. Event Log Analysis & Attribution
+By pivoting to the central log repository, the execution logs were analyzed to trace the source user and endpoint responsible for executing the unauthorized application.
+
+![Process Execution User Identification]<img width="1364" height="646" alt="1 2" src="https://github.com/user-attachments/assets/670593bb-9c51-426d-8d0c-caa575aa204a" />
+![Hostname Identification]<img width="1364" height="647" alt="1 3" src="https://github.com/user-attachments/assets/c055b9ac-7071-42c4-b9d7-634b1a81e6a5" />
+
+* **User Responsible:** `chris`
+* **Full Process Path:** `C:\Users\Chris\temp\cudominer.exe`
+* **Affected Hostname:** `HR_02`
+
+---
+
+### 3. Detection Rule Analysis
+Examining the underlying SIEM detection logic revealed how the rule was triggered.
+
+![SIEM Rule Logic Analysis]<img width="1365" height="565" alt="2 1" src="https://github.com/user-attachments/assets/016df476-97fe-48eb-898d-1a0c413406e0" />
+
+* **Rule Query:** 
+  `Alert "Potential CryptoMiner Activity" If EventID = 4688 AND Log_Source = WindowsEventLogs AND ProcessName = (*miner* OR *crypt*)`
+* **Matched Term:** `miner` (matched via `*miner*` wildcard on `cudominer.exe`)
+
+---
+
+### 4. Incident Response & Host Containment
+Based on the evidence collected, the alert was classified as a **True Positive**. Immediate containment action was taken through the SIEM platform to isolate the compromised workstation from the internal network.
+
+![Incident Response Action Selection]<img width="1363" height="521" alt="2 2" src="https://github.com/user-attachments/assets/99cdc01b-0840-452e-b400-bf3042b81a68" />
+
+* **Classification:** True Positive
+* **Remediation Action:** Host Isolated (`HR_02`)
+
+---
+
+## 🏆 Lab Completion & Proof of Completion
+
+### Task Progress
+![Task Completion Overview]<img width="688" height="647" alt="3 1" src="https://github.com/user-attachments/assets/0d72b367-9d47-4822-9a5f-f5bd6618e8d5" />
+
+### Room Completion Banner
+![TryHackMe Room Completed]<img width="1365" height="644" alt="4" src="https://github.com/user-attachments/assets/ac7fd007-d173-4561-b52e-73b638e73592" />
+
+---
+
+## 💡 Key Takeaways
+1. **SIEM Correlation Rules:** Simple wildcard string matching (e.g., `*miner*`) on process creation logs (`Event ID 4688`) can quickly flag unauthorized execution of tools like cryptominers.
+2. **Contextual Investigation:** Identifying the process path (`C:\Users\Chris\temp\cudominer.exe`) and host (`HR_02`) provides the necessary context to determine intent and impact.
+3. **Automated Response:** Modern SIEM environments allow analysts to take immediate containment steps—such as host isolation—directly within the alert workflow to limit lateral movement.
