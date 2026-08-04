@@ -865,3 +865,103 @@ Based on the evidence collected, the alert was classified as a **True Positive**
 1. **SIEM Correlation Rules:** Simple wildcard string matching (e.g., `*miner*`) on process creation logs (`Event ID 4688`) can quickly flag unauthorized execution of tools like cryptominers.
 2. **Contextual Investigation:** Identifying the process path (`C:\Users\Chris\temp\cudominer.exe`) and host (`HR_02`) provides the necessary context to determine intent and impact.
 3. **Automated Response:** Modern SIEM environments allow analysts to take immediate containment steps—such as host isolation—directly within the alert workflow to limit lateral movement.
+
+
+
+
+# TryHackMe: Splunk Basic Room Writeup
+
+A comprehensive walkthrough covering log ingestion, index configuration, and Search Processing Language (SPL) queries executed in Splunk Enterprise during the Splunk: Basic room on TryHackMe.
+
+---
+
+## 📌 Room Details
+* Platform: [TryHackMe](https://tryhackme.com/)
+* Room: Splunk: Basic
+* Category: SIEM / SOC Operations
+* Skills Tested: Data Ingestion, Index Management, SPL Filtering, Data Analysis & Field Extraction
+
+---
+
+## 🛠️ Environment & Ingestion Setup
+
+Before executing search queries, the target log file was ingested into Splunk Enterprise using the following steps:
+
+1. **Target Environment:** AttackBox running Splunk Enterprise (v8.2.6)
+2. **Log File Location:** `/root/Rooms/SplunkBasic/VPNlogs.json`
+3. **Ingestion Workflow:**
+   * Navigated to `Settings -> Add Data -> Upload`.
+   * Selected `VPNlogs.json` from the local directory `/root/Rooms/SplunkBasic/`.
+   * Set `sourcetype` to `_json` for proper key-value field parsing.
+   * Created a new index named `vpn_logs`.
+   * Reviewed input settings and finalized ingestion to start searching.
+
+---
+
+## 🔍 Task Walkthrough & Detailed SPL Investigations
+
+### Task 1: Ingested Log Event Count
+Question: Upload the data attached to this task and create an index "VPN_Logs". How many events are present in the log file?
+
+* **SPL Query:** `index="vpn_logs"`
+* **Answer:** `2862`
+* **Detailed Explanation:** 
+  After uploading `VPNlogs.json` to Splunk and storing it inside the `vpn_logs` index, executing a broad search across `index="vpn_logs"` with the time range set to All time returns every parsed log entry. Splunk calculates the total count directly above the timeline view, confirming that exactly 2,862 log events were successfully indexed from the raw JSON file.
+
+![Task 1 - Total Ingested Events]<img width="1365" height="577" alt="1 1" src="https://github.com/user-attachments/assets/699e1adb-7e16-4b88-bbd2-36224d1d4b8b" />
+
+---
+
+### Task 2: User Activity Filtering
+Question: How many log events are captured by the user Maleena?
+
+* **SPL Query:** `index="vpn_logs" "Maleena"`
+* **Answer:** `60`
+* **Detailed Explanation:** 
+  To isolate all VPN activities performed specifically by the user "Maleena", we execute a text-matching search filter on our index. Splunk scans the parsed `UserName` JSON fields and filters out all unrelated user activities, resulting in exactly 60 event logs tied to Maleena's connections and teardowns.
+
+![Task 2 - User Maleena Events]<img width="1363" height="563" alt="1 2" src="https://github.com/user-attachments/assets/7d0bdf8a-281d-4bbd-bf53-1f65dc2cbde2" />
+
+---
+
+### Task 3: IP Address to Identity Correlation
+Question: What is the username associated with IP 107.14.182.38?
+
+* **SPL Query:** `index="vpn_logs" "107.14.182.38"`
+* **Answer:** `Smith`
+* **Detailed Explanation:** 
+  In threat hunting and log analysis, correlating source IP addresses to specific user accounts is critical. By querying the target IP address `107.14.182.38` within the `vpn_logs` index, Splunk filters down the matching events. Expanding any event payload reveals the JSON field structure where `UserName` is explicitly mapped to Smith.
+
+![Task 3 - IP and Username Correlation]<img width="1365" height="573" alt="1 3" src="https://github.com/user-attachments/assets/53814ac4-6fae-4818-ab22-22a9c67f520a" />
+
+---
+
+### Task 4: Country Exclusion Search (Boolean NOT / !=)
+Question: What is the number of events that originated from all countries except France?
+
+* **SPL Query:** `index="vpn_logs" Source_Country!="France"`
+* **Answer:** `2814`
+* **Detailed Explanation:** 
+  To filter out geographical noise or isolate non-domestic traffic, we utilize Splunk's relational exclusion operator (`!=`). The field `Source_Country` is evaluated, and any log entry where the country equals "France" is excluded from the query results. Out of the 2,862 total events, subtracting France's events leaves exactly 2,814 events originating from all other countries.
+
+![Task 4 - Non-France Events Count]<img width="1365" height="515" alt="1 4" src="https://github.com/user-attachments/assets/9811bc2c-c0af-4d3f-af87-2301526b7d02" />
+
+---
+
+### Task 5: Specific IP Activity Tracking
+Question: How many VPN events were associated with the IP 107.3.206.58?
+
+* **SPL Query:** `index="vpn_logs" Source_ip="107.3.206.58"`
+* **Answer:** `14`
+* **Detailed Explanation:** 
+  To determine the frequency of network traffic originating from a specific endpoint, we query the extracted field `Source_ip` directly against `107.3.206.58`. Splunk executes an exact field match search and aggregates the events, returning a total event count of 14 for this IP address.
+
+![Task 5 - Specific IP Events Count]<img width="1365" height="572" alt="1 5" src="https://github.com/user-attachments/assets/af3efbc2-8cd7-4173-bc6d-6b4ade54bf49" />
+
+---
+
+## 🎉 Room Completion
+
+All investigative tasks were answered correctly and verified on TryHackMe.
+
+![TryHackMe Room Completed]<img width="1365" height="645" alt="2" src="https://github.com/user-attachments/assets/565974dc-39bb-4d1b-a87a-2513f7c41039" />
