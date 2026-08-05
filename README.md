@@ -965,3 +965,130 @@ Question: How many VPN events were associated with the IP 107.3.206.58?
 All investigative tasks were answered correctly and verified on TryHackMe.
 
 ![TryHackMe Room Completed]<img width="1365" height="645" alt="2" src="https://github.com/user-attachments/assets/565974dc-39bb-4d1b-a87a-2513f7c41039" />
+
+
+
+
+
+# ⚡ TryHackMe Writeup: Kibana — Data Visualization & Threat Hunting 🛡️
+
+> Author: Kavindu  
+> Target System: Elastic Stack (Kibana Discover & Kibana Lens)  
+> Focus Area: Threat Hunting, Log Analysis, KQL Queries & SOC Dashboard Building  
+
+---
+
+## 📌 Executive Summary
+This repository contains a comprehensive walk-through and investigation report for the TryHackMe: Kibana lab. The objective was to analyze raw VPN connection logs, isolate malicious activity, trace compromised/unauthorized accounts, and build dedicated Security Operations Center (SOC) visualizations and monitoring dashboards.
+
+---
+
+## 🔍 Part 1: Log Exploration & Field Filtering
+
+### 1. Initial Overview of VPN Logs
+Analyzed baseline VPN telemetry to determine general connection patterns and baseline activity.
+* Total Records Analyzed: 2,861 hits
+* Observation: Steady volume of connections with noticeable periodic spikes.
+
+![Baseline VPN Logs]<img width="1363" height="646" alt="1 1" src="https://github.com/user-attachments/assets/7cb30ae2-77dc-4a67-9c77-3155bb864b39" />
+
+---
+
+### 2. Identifying Top Source IP Addresses
+Inspected network parameters to isolate top talking external endpoints.
+* Top Originating IP: 238.163.231.224 (Accounting for 3.2% of overall traffic)
+
+![Top Source IPs]<img width="1365" height="645" alt="1 2" src="https://github.com/user-attachments/assets/fddca3ed-9a26-4bd6-8a89-0b304f3af6e1" />
+
+---
+
+### 3. User Investigation — Emanda
+Filtered logs specifically targeting user Emanda to evaluate authentication behavior and network origins.
+* Filter: UserName : Emanda
+* Total Volume: 56 hits
+
+![Emanda Logs]<img width="1364" height="646" alt="1 3" src="https://github.com/user-attachments/assets/30e62ee3-1638-4e09-b6f2-91847e59b540" />
+
+* Source IP Distribution:
+  * 107.14.1.247 — 53.6%
+  * 107.14.4.82 — 46.4%
+
+![Emanda Source IPs]<img width="1365" height="643" alt="1 4" src="https://github.com/user-attachments/assets/224ba08e-7bab-4135-bf66-1770b006bc15" />
+
+---
+
+### 4. Anomaly Investigation — January 11, 2022
+Detected and investigated a severe anomaly (traffic surge) on January 11, 2022.
+* Date Filter: Jan 11, 2022 @ 00:00:00 ➔ Jan 11, 2022 @ 23:59:59
+* Total Hits: 283 hits
+* Primary Offender: 172.201.60.191 (Responsible for 97.2% of total connections)
+
+![Jan 11 Surge]<img width="1365" height="647" alt="1 5" src="https://github.com/user-attachments/assets/18ce28cd-4478-4d4a-854f-02acdd93b694" />
+![Jan 11 Source IP]<img width="1364" height="646" alt="1 6" src="https://github.com/user-attachments/assets/112e21b0-4655-48a7-b8ea-4e2e942cb4c8" />
+
+---
+
+### 5. Multi-Filter Analysis — New York Geographic Tracking
+Correlated geolocation and IP telemetry to track connections from New York via IP 238.163.231.224.
+* Total Matching Events: 48 hits
+* Target Account: Rafique M
+
+![New York Filters]<img width="1365" height="645" alt="1 7" src="https://github.com/user-attachments/assets/94775c98-5979-4023-ba89-27d4d7d9b8ee" />
+
+---
+
+### 6. Customized Field View Setup
+Configured a clean tabular view isolating high-value SOC fields: @timestamp, Source_ip, UserName, and Source_Country.
+
+![Custom Log Table]<img width="1364" height="644" alt="1 8" src="https://github.com/user-attachments/assets/9a19f238-5583-44d8-88d0-495e0b8de594" />
+
+---
+
+## 🎯 Part 2: Kibana Query Language (KQL) Investigations
+
+### 1. Compound Logic Search
+Constructed a boolean KQL expression targeting US-originating traffic for users James or Albert.
+
+* KQL Query: Source_Country : "United States" AND UserName : James OR Albert
+* Total Resulting Hits: 161
+* Outcome: Successfully isolated relevant targeted connection traffic.
+
+![Compound KQL Search]<img width="1365" height="646" alt="2 1" src="https://github.com/user-attachments/assets/fe0055bf-ab87-43c3-b8f6-d08156c94291" />
+
+---
+
+### 2. Terminated Employee Access Audit (Johny Brown)
+Cross-referenced offboarding records against active VPN connections. User Johny Brown was terminated on January 1, 2022.
+
+* KQL Query: UserName : Johny Brown
+* Post-Termination Traffic: 1 connection detected on Jan 7, 2022 @ 07:58:47.
+* Verdict: 🚨 True Positive (Potential rogue access or unrevoked VPN credentials post-offboarding).
+
+![Johny Brown Investigation]<img width="1365" height="646" alt="2 2" src="https://github.com/user-attachments/assets/1b6fde2e-bd5c-4b5b-bbf7-117e8ad2db4c" />
+
+---
+
+## 📊 Part 3: Visualizations & SOC Dashboarding
+
+### 1. Failed Logon Aggregation Table
+Built a dedicated Kibana Lens table visualization aggregating failed authentication attempts.
+* Filter: action: failed
+* Columns: UserName | Source_ip | Count of records
+* Key Finding: User Simon logged 274 failed attempts from IP 172.201.60.191 (Strong indicator of a brute-force attack).
+
+![Failed Logon Visualization]<img width="1365" height="645" alt="3 1" src="https://github.com/user-attachments/assets/294a7dc4-62d8-4dc7-accf-37cf1336f4aa" />
+
+---
+
+### 2. Centralized SOC Monitoring Dashboard
+Combined custom metrics, charts, and tables into a real-time Elastic Dashboard for active threat monitoring.
+
+![Custom Elastic Dashboard]<img width="1365" height="647" alt="4 1" src="https://github.com/user-attachments/assets/43d56e83-48a4-4a44-9033-9d17d0fb7020" />
+
+---
+
+## 🏁 Completion Summary
+* Lab Status: ✅ 100% Completed
+* Core Competencies: KQL Syntax, Log Filtering, Anomaly Identification, Insider Threat Detection, SOC Dashboard Engineering.
+
+![Room Completion]<img width="1365" height="646" alt="5" src="https://github.com/user-attachments/assets/1c3c45dc-e424-4b87-b3a8-c76dada6a19f" />
