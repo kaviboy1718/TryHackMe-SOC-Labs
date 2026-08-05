@@ -1092,3 +1092,105 @@ Combined custom metrics, charts, and tables into a real-time Elastic Dashboard f
 * Core Competencies: KQL Syntax, Log Filtering, Anomaly Identification, Insider Threat Detection, SOC Dashboard Engineering.
 
 ![Room Completion]<img width="1365" height="646" alt="5" src="https://github.com/user-attachments/assets/1c3c45dc-e424-4b87-b3a8-c76dada6a19f" />
+
+
+
+
+# TryHackMe: Introduction to SOAR — Room Writeup
+
+A comprehensive guide and Security Operations Center (SOC) analysis covering Security Orchestration, Automation, and Response (SOAR) workflow design, playbook configuration, and human-in-the-loop automation balancing on TryHackMe.
+
+---
+
+## 📌 Room Overview
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+* **Room:** Introduction to SOAR
+* **Category:** SOC Operations / Security Engineering
+* **Skills Tested:** Playbook Design, SOAR Workflow Automation, Incident Response Orchestration, Human-in-the-Loop Validation
+
+---
+
+## ⚙️ SOAR Workflow Configuration Matrix
+
+| Workflow Category | Action Item | Mode | Rationale |
+| :--- | :--- | :--- | :--- |
+| **Case Management** | Create Case Ticket | **Automated** | Instantly index incoming alerts into ticketing platforms (TheHive, ServiceNow). |
+| **Case Management** | Assign Case Ticket | **Automated** | Route tickets to available analysts or tiered queues based on severity. |
+| **Case Management** | Communicate Case Ticket | **Automated** | Dispatch real-time notification alerts across Slack, Email, or Teams channels. |
+| **Case Management** | Update Case Ticket | **Automated** | Sync case status and dynamic enrichment data via REST APIs automatically. |
+| **Case Management** | Delete Case Ticket | **Automated** | Automatically purge or archive resolved/false-positive test tickets. |
+| **Threat Intelligence** | Fetch New Incident Alerts | **Automated** | Pull new telemetry continuously from threat feed integrations. |
+| **Threat Intelligence** | Set Fetch Intervals | **Automated** | Maintain scheduled API query intervals without manual triggering. |
+| **Threat Intelligence** | Failed Fetch Notifications | **Automated** | Alert SOC team instantly if threat feed API connectors go offline. |
+| **Threat Intelligence** | Discard Old Alerts | **Manual** | Require human review before permanently purging stale threat intelligence data. |
+| **Data Extraction** | Extract Domains | **Automated** | Parse domain IOCs from raw alert payloads for lookup against VirusTotal. |
+| **Data Extraction** | Extract URLs | **Automated** | Extract malicious URLs automatically for automated enrichment. |
+| **Data Extraction** | Extract IPs | **Automated** | Isolate source/destination IP addresses for automated reputation scoring. |
+| **Data Extraction** | Analyst Extraction | **Manual** | Reserve manual extraction for unknown, obfuscated, or custom protocol payloads. |
+| **Reputation Checks** | Reputation Results Output | **Automated** | Compile reputation scores automatically from VirusTotal and threat feeds. |
+| **Reputation Checks** | Sandbox Testing | **Manual** | Require analyst verification before executing untrusted files in ANY.RUN/Hybrid-Analysis. |
+| **Reputation Checks** | Analyst Validation | **Manual** | Human tier-2 analyst confirms malicious intent before taking destructive action. |
+| **Course of Action** | Block Domains | **Automated** | Push domain blacklist rules directly to firewalls upon approved mitigation. |
+| **Course of Action** | Block IPs | **Automated** | Execute IP blocking on network perimeter devices via automated scripts. |
+| **Course of Action** | Block URLs | **Automated** | Update secure web gateway (SWG) filtering rules automatically. |
+| **Course of Action** | Update Case Tickets | **Automated** | Log remediation actions and update ticket state upon execution. |
+| **Course of Action** | Analyst Approve COA | **Manual** | Require explicit analyst approval prior to executing containment/blocking actions. |
+
+---
+
+## 🔍 Step-by-Step Lab Breakdown
+
+### 1. SOAR Interactive Dashboard Navigation
+The interactive environment consists of 5 core investigation modules that make up a complete Incident Response (IR) automated pipeline:
+1. Case Ticket Management
+2. Threat Intelligence Feeds
+3. Incident Data Extraction
+4. Reputation Checks
+5. Course of Action (COA)
+
+![SOAR Interactive Dashboard]<img width="643" height="646" alt="1 1" src="https://github.com/user-attachments/assets/8bc6be3b-7a27-43d8-802e-e712fa3ca165" />
+
+---
+
+### 2. Module 1: Case Management Settings
+* **Troubleshooting Note:** Setting `Delete Case Ticket` to Manual causes an environment pipeline error (`Error: Case Ticket setting is incorrect.`). To establish proper SOAR case lifecycle automation, all case management operations (Create, Assign, Communicate, Update, and Delete) must be enabled as **Automated**.
+
+![Case Management Settings]<img width="609" height="420" alt="1 2" src="https://github.com/user-attachments/assets/64d6f710-a5b2-46ff-9b65-4b5d0e2ef6e3" />
+
+---
+
+### 3. Module 2: Threat Intelligence Feeds
+* **Automation Scope:** Automatic ingestion of incident alerts, scheduled API polling intervals, and automated failure notifications.
+* **Manual Control:** Discarding old alerts is assigned to **Manual** review to prevent accidental deletion of threat logs needed for historical hunting.
+
+![Threat Intelligence Feeds Settings]<img width="605" height="334" alt="1 3" src="https://github.com/user-attachments/assets/8471fe8f-7f2f-4de0-912f-e691253a87ec" />
+
+---
+
+### 4. Module 3: Incident Data Extraction
+* **Automation Scope:** Automated parsing and regex extraction of Domains, URLs, and IPv4/v6 addresses from alert payloads.
+* **Manual Control:** Analyst extraction remains **Manual** for non-standard payloads or zero-day obfuscation patterns.
+
+![Incident Data Extraction Settings]<img width="611" height="340" alt="1 4" src="https://github.com/user-attachments/assets/b5245322-e30f-496b-93f5-379be5b2ef4d" />
+
+---
+
+### 5. Module 4: Reputation Checks
+* **Automation Scope:** Output compilation of threat intelligence scores from platforms like VirusTotal.
+* **Manual Control:** Sandbox detonate execution (ANY.RUN / Hybrid Analysis) and final case validation are set to **Manual** to avoid false-positive detonations and overhead.
+
+![Reputation Checks Settings]<img width="609" height="340" alt="1 5" src="https://github.com/user-attachments/assets/541231f4-90d1-4f48-8083-4a7efc71067a" />
+---
+
+### 6. Module 5: Course of Action (COA) / Containment
+* **Automation Scope:** Automated deployment of firewall and web proxy rules (Block Domains, Block IPs, Block URLs) and ticket updating.
+* **Human-in-the-Loop Safeguard:** `Analyst Approve COA` is enforced as **Manual**, ensuring a human analyst authorizes all blocking actions before perimeter firewalls execute containment commands.
+
+![Course of Action Settings]<img width="607" height="425" alt="1 6" src="https://github.com/user-attachments/assets/ef5d4eb0-feee-45f6-ae6d-465d4d0473dd" />
+---
+
+## 🎉 Room Completion
+
+After configuring all 5 SOAR settings blocks with the correct blend of automated playbooks and human analyst intervention safeguards, the workflow engine validates successfully.
+
+![TryHackMe Room Completed Screen]<img width="1365" height="646" alt="2" src="https://github.com/user-attachments/assets/757957fa-91d6-4420-9d05-376387720551" />
