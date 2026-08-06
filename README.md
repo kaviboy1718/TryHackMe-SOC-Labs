@@ -1194,3 +1194,97 @@ The interactive environment consists of 5 core investigation modules that make u
 After configuring all 5 SOAR settings blocks with the correct blend of automated playbooks and human analyst intervention safeguards, the workflow engine validates successfully.
 
 ![TryHackMe Room Completed Screen]<img width="1365" height="646" alt="2" src="https://github.com/user-attachments/assets/757957fa-91d6-4420-9d05-376387720551" />
+
+
+
+
+# TryHackMe: Pyramid of Pain — Room Writeup
+
+A practical guide and Cyber Threat Intelligence (CTI) writeup on analyzing Indicators of Compromise (IOCs), threat attribution, and dynamic sandbox malware analysis using the **Pyramid of Pain** framework on TryHackMe.
+
+---
+
+## 📌 Room Overview
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+* **Room:** Pyramid of Pain
+* **Category:** Cyber Threat Intelligence (CTI) / Blue Team
+* **Skills Tested:** IOC Categorization, ANY.RUN Dynamic Malware Analysis, MITRE ATT&CK Mapping, REvil/Sodinokibi Ransomware Analysis
+
+---
+
+## 🔺 The Pyramid of Pain Breakdown
+
+The Pyramid of Pain (conceptualized by David J Bianco) illustrates how difficult it is for an adversary to alter their indicators of compromise (IOCs) when detected by security analysts.
+
+| Level | Indicator Type | Relative Pain Level | SOC / Defender Impact & Description |
+| :--- | :--- | :--- | :--- |
+| **1 (Base)** | **Hash Values** | Trivial | SHA-256, SHA-1, or MD5 file signatures. Easy to calculate and block, but trivial for attackers to change via single-byte modification. |
+| **2** | **IP Addresses** | Easy | Network infrastructure endpoints. Blocking IPs provides quick relief, but attackers easily switch to new proxies, VPNs, or cloud nodes. |
+| **3** | **Domain Names** | Simple / Moderate | Domain infrastructure used in typo-squatting or phishing. Slightly harder to replace due to domain registration and DNS setup costs. |
+| **4** | **Network & Host Artifacts** | Annoying | Distinctive indicators left by malicious tools (e.g., custom User-Agent strings, specific registry keys, ransom notes, URI patterns). |
+| **5** | **Tools** | Challenging | Software utilities employed by threat actors (e.g., Cobalt Strike, Mimikatz, vssadmin scripts). Tool replacement forces attackers to rewrite software. |
+| **6 (Peak)** | **TTPs** | Tough! | Tactics, Techniques, and Procedures (MITRE ATT&CK framework). Disrupting TTPs forces attackers to re-engineer their entire operational methodology. |
+
+---
+
+## 🔍 Practical Analysis & Threat Investigation
+
+### 1. ANY.RUN Dynamic Sandbox Analysis (REvil / Sodinokibi Ransomware)
+During the practical investigation, a binary (`some_malicious_file.bin.exe`) was executed within an ANY.RUN dynamic analysis sandbox to observe runtime behavior and extract IOCs across the Pyramid levels.
+
+* **Sample Name:** `some_malicious_file.bin.exe`
+* **File MD5:** `890A58F200DFFF23165DF9E1B088E58F`
+* **Threat Family:** REvil / Sodinokibi Ransomware
+* **Threat Score:** `100 / 100` (Malicious)
+
+![ANY.RUN Execution Tree]
+
+<img width="1362" height="646" alt="1 1" src="https://github.com/user-attachments/assets/2f303cbb-5812-4723-99f6-bf1dc27bad2a" />
+
+#### Execution Process Hierarchy & Commands:
+1. `some_malicious_file.bin.exe` (PID 2256) spawns process instance PID 1632.
+2. PID 1632 executes command shell subprocess:
+   ```cmd
+   cmd.exe /c vssadmin.exe Delete Shadows /All /Quiet & bcdedit /set {default} recoveryenabled No & bcdedit /set {default} bootstatuspolicy ignoreallfailures
+   ```
+3. `vssadmin.exe Delete Shadows /All /Quiet` — Purges Volume Shadow Copies to block system restore capabilities.
+4. `bcdedit.exe /set {default} recoveryenabled No` — Disables automated Windows startup recovery.
+5. `bcdedit.exe /set {default} bootstatuspolicy ignoreallfailures` — Forces system to bypass boot errors automatically.
+
+---
+
+### 2. Extracted IOCs & Network Telemetry
+
+![ANY.RUN DNS Ingestion & Threat Score]
+
+<img width="1365" height="646" alt="1 2" src="https://github.com/user-attachments/assets/30012fd9-cf7f-44ff-8cae-9a617a3a9b93" />
+
+* **Ransom Artifact:** File encrypted notification generated on victim desktop: `Find 9m32i-readme.txt and follow instuctions`.
+* **DNS Query Requests & Resolved IPs:**
+  * `craftingalegacy.com` ➔ `50.87.136.52`
+  * `g2mediainc.com` ➔ `78.46.1.42`
+  * `brinkdoepke.eu` ➔ `134.119.253.108`
+  * `vipcarrental.ae` ➔ `104.21.87.185` / `172.67.145.154`
+* **MITRE ATT&CK Technique Mapping:**
+  * **T1486 (Data Encrypted for Impact):** Ransomware encrypted host files and generated ransom instructions.
+  * **T1490 (Inhibit System Recovery):** Deletion of shadow copies via `vssadmin` and modification of `bcdedit` boot configurations.
+
+---
+
+### 3. Concept Mapping & Hierarchy Completion
+
+![Pyramid of Pain Concept Mapping]
+
+<img width="666" height="643" alt="2 3" src="https://github.com/user-attachments/assets/05ec1c86-79c7-4e64-91a5-ba70cb321321" />
+
+![Pyramid of Pain Full Hierarchy]
+
+<img width="667" height="647" alt="2 4" src="https://github.com/user-attachments/assets/88b23d5f-8a19-4009-acf5-c96f7543ed17" />
+
+---
+
+## 🎉 Room Completion
+
+All 10 tasks completed successfully on TryHackMe.
+
+![TryHackMe Room Completed Screen]<img width="1363" height="645" alt="3" src="https://github.com/user-attachments/assets/bd9926e3-da97-440c-bf4a-0e305df99396" />
