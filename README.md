@@ -1288,3 +1288,71 @@ During the practical investigation, a binary (`some_malicious_file.bin.exe`) was
 All 10 tasks completed successfully on TryHackMe.
 
 ![TryHackMe Room Completed Screen]<img width="1363" height="645" alt="3" src="https://github.com/user-attachments/assets/bd9926e3-da97-440c-bf4a-0e305df99396" />
+
+
+
+
+# TryHackMe: Cyber Kill Chain — Room Writeup
+
+A comprehensive guide and Security Operations Center (SOC) breakdown analyzing the Lockheed Martin **Cyber Kill Chain** framework, attack stage mapping, and practical threat scenario reconstruction on TryHackMe.
+
+---
+
+## 📌 Room Overview
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+* **Room:** Cyber Kill Chain
+* **Category:** Cyber Threat Intelligence (CTI) / Security Operations
+* **Skills Tested:** Lockheed Martin Cyber Kill Chain Mapping, Intrusion Lifecycle Analysis, Threat Scenario Reconstruction, Defense-in-Depth Strategy
+
+---
+
+## 🎯 Cyber Kill Chain Phase Mapping Matrix
+
+The Lockheed Martin Cyber Kill Chain model outlines seven distinct stages of an adversary intrusion. The table below details how real-world attack vectors map to each phase in the practical scenario:
+
+| Kill Chain Stage | Icon Indicator | Scenario Action Item | Stage Description & Defensive Focus |
+| :--- | :--- | :--- | :--- |
+| **1. Reconnaissance** | Radar | *Information Gathering* | Adversaries harvest target OSINT, email lists, domain topology, and vulnerable endpoints. |
+| **2. Weaponization** | Bug / Malicious Code | **powershell** | Coupling malicious payloads with exploits (e.g., weaponizing PowerShell scripts or office macros). |
+| **3. Delivery** | Sealed Package | **spearphishing attachment** | Transmitting the weaponized payload to the target (e.g., via targeted emails or infected USBs). |
+| **4. Exploitation** | Target Laptop | **exploit public-facing application** | Triggering the malicious code by exploiting software vulnerabilities or web applicaton flaws. |
+| **5. Installation** | Unpacked Box / Arrow | **dynamic linker hijacking** | Establishing persistence on the host system (e.g., dynamic link library hijacking, scheduled tasks, web shells). |
+| **6. Command & Control** | Megaphone | **fallback channels** | Establishing a covert communication channel back to attacker infrastructure (e.g., C2 backup channels, DNS tunneling). |
+| **7. Actions on Objectives** | Bullseye / Target | **data from local system** | Executing the primary goal (e.g., exfiltrating local host data, ransomware encryption, lateral movement). |
+
+---
+
+## 🔍 Practical Scenario Analysis
+
+### 1. Kill Chain Lifecycle Framework
+Understanding the intrusion lifecycle enables security teams to implement **Defense-in-Depth** controls at each layer, breaking the chain before adversaries reach their final objectives.
+
+![Cyber Kill Chain Interactive Diagram]
+
+<img width="674" height="647" alt="1 1" src="https://github.com/user-attachments/assets/6895d463-ad54-4306-84f4-ae2b46408a6c" />
+
+---
+
+### 2. Practical Attack Reconstruction
+In the practical exercise, threat vectors were categorized across the 6 active scenario stages to trace the adversary path from weaponization through post-exploitation exfiltration:
+
+* **Weaponization:** `powershell` — Payload created to execute malicious memory-resident scripts.
+* **Delivery:** `spearphishing attachment` — Initial access vector used to deliver the payload directly to internal end-users.
+* **Exploitation:** `exploit public-facing application` — Triggering unpatched application flaws on exposed network infrastructure.
+* **Installation:** `dynamic linker hijacking` — Achieving system persistence by replacing legitimate shared libraries with malicious binaries.
+* **Command & Control:** `fallback channels` — Maintaining robust operational control through redundant C2 communication channels.
+* **Actions on Objectives:** `data from local system` — Harvesting and exfiltrating target host data.
+
+![Cyber Kill Chain Scenario Mapping]
+
+<img width="1365" height="646" alt="1 2" src="https://github.com/user-attachments/assets/ccbb72ca-2e51-4bff-9eb6-1f528bdee9a5" />
+
+---
+
+## 🎉 Room Completion
+
+All tasks completed successfully on TryHackMe.
+
+![TryHackMe Room Completed Screen]
+
+<img width="1365" height="647" alt="3" src="https://github.com/user-attachments/assets/33bd6d7c-f9ae-4da2-98ab-4f954933f7d2" />
