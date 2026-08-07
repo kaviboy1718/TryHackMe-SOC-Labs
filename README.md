@@ -1356,3 +1356,80 @@ All tasks completed successfully on TryHackMe.
 ![TryHackMe Room Completed Screen]
 
 <img width="1365" height="647" alt="3" src="https://github.com/user-attachments/assets/33bd6d7c-f9ae-4da2-98ab-4f954933f7d2" />
+
+
+
+
+# TryHackMe: Unified Kill Chain — Room Writeup
+
+A comprehensive guide and Security Operations Center (SOC) breakdown analyzing Paul Pols' **Unified Kill Chain (UKC)** framework, attack phase mapping, and practical threat scenario alignment on TryHackMe.
+
+---
+
+## 📌 Room Overview
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+* **Room:** Unified Kill Chain
+* **Category:** Cyber Threat Intelligence (CTI) / Security Operations
+* **Skills Tested:** Unified Kill Chain Mapping, Threat Modeling, TTP Identification, Adversary Lifecycle Analysis
+
+---
+
+## 🧭 Unified Kill Chain (UKC) Framework Overview
+
+The Unified Kill Chain unifies the **Lockheed Martin Cyber Kill Chain** and **MITRE ATT&CK** into an 18-stage framework categorized under three primary tactical goals:
+
+```text
+       ┌─────────────────────────────────────────────────────────┐
+       │                 THE UNIFIED KILL CHAIN                  │
+       └────────────────────────────┬────────────────────────────┘
+                                    │
+         ┌──────────────────────────┼──────────────────────────┐
+         ▼                          ▼                          ▼
+   ┌───────────┐             ┌─────────────┐            ┌─────────────┐
+   │  GOAL 1:  │             │   GOAL 2:   │            │   GOAL 3:   │
+   │    IN     │ ──────────► │   THROUGH   │ ─────────► │     OUT     │
+   │ (Initial  │             │  (Network   │            │ (Action on  │
+   │ Foothold) │             │Propagation) │            │ Objectives) │
+   └───────────┘             └─────────────┘            └─────────────┘
+```
+
+| UKC Goal Category | Focus Area | Key Tactical Phases Included |
+| :--- | :--- | :--- |
+| **Goal 1: In** | Initial Access & Foothold | Reconnaissance, Weaponization, Delivery, Social Engineering, Exploitation, Persistence |
+| **Goal 2: Through** | Network Propagation & Escalation | Defense Evasion, Command & Control (C2), Pivoting, Privilege Escalation, Lateral Movement |
+| **Goal 3: Out** | Action on Objectives | Target Identification, Exfiltration, Data Encrypting, Impact / Monetization |
+
+---
+
+## 🔍 Practical Phase Scenario Matching
+
+During the practical assessment, adversary actions were evaluated and mapped to their corresponding phase within the Unified Kill Chain:
+
+| Scenario Action Description | Correct UKC Phase | UKC Goal Category | Key Defensive Verification |
+| :--- | :--- | :--- | :--- |
+| **"The Attacker uses tools to gather information about a system"** | **Reconnaissance** | Goal 1: In | Active/Passive scanning and OSINT gathering prior to initial delivery. |
+| **"The Attacker installs a malicious script to allow them remote access at a later date"** | **Persistence** | Goal 1: In | Maintaining host presence across system reboots and credential changes. |
+| **"The hacked machine is being controlled from an Attacker's own server"** | **Command and Control** | Goal 2: Through | Establishing active beaconing channels back to C2 infrastructure. |
+| **"The Attacker uses the hacked machine to access other servers on the same network"** | **Pivoting** | Goal 2: Through | Leveraging an internal compromised host to traverse network segments. |
+| **"The Attacker steals a database and sells this to a 3rd party"** | **Action and Objectives** | Goal 3: Out | Fulfilling ultimate operational goals (Exfiltration, Impact, and Monetization). |
+
+---
+
+## 📸 Lab Screenshots & Verification
+
+### 1. Phase Mapping Scenarios
+
+![Reconnaissance Phase Mapping]<img width="665" height="645" alt="1 1" src="https://github.com/user-attachments/assets/49b42f71-6fac-4bc1-a19d-02cb2800de65" />
+![Persistence Phase Mapping]<img width="668" height="646" alt="1 2" src="https://github.com/user-attachments/assets/1a54cd8e-2c2f-4f58-90bd-89a7e6d6470b" />
+![Command and Control Phase Mapping]<img width="666" height="644" alt="1 3" src="https://github.com/user-attachments/assets/b172e6e3-3e22-4914-8ec4-baae7dc8e528" />
+![Pivoting Phase Mapping]<img width="665" height="645" alt="1 4" src="https://github.com/user-attachments/assets/6fcb6c3c-8adb-483c-9fef-bcac932f81f7" />
+![Action on Objectives Phase Mapping]<img width="668" height="645" alt="1 5" src="https://github.com/user-attachments/assets/108b8925-1d8e-4018-9194-91a6e353df93" />
+
+---
+
+### 2. Task Progress & Room Completion
+
+All 9 tasks completed successfully on TryHackMe.
+
+![TryHackMe Task Completion List]<img width="1365" height="606" alt="1 6" src="https://github.com/user-attachments/assets/efcf89e1-a80d-46c4-889b-56c031a4e7fd" />
+![TryHackMe Room Completed Screen]<img width="1365" height="647" alt="2" src="https://github.com/user-attachments/assets/25e6ad68-c703-477c-b9ee-7e941f32c95a" />
