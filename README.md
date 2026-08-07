@@ -1433,3 +1433,76 @@ All 9 tasks completed successfully on TryHackMe.
 
 ![TryHackMe Task Completion List]<img width="1365" height="606" alt="1 6" src="https://github.com/user-attachments/assets/efcf89e1-a80d-46c4-889b-56c031a4e7fd" />
 ![TryHackMe Room Completed Screen]<img width="1365" height="647" alt="2" src="https://github.com/user-attachments/assets/25e6ad68-c703-477c-b9ee-7e941f32c95a" />
+
+
+
+
+# TryHackMe: MITRE — Room Writeup
+
+A comprehensive walkthrough and Security Operations Center (SOC) breakdown analyzing the **MITRE** room on TryHackMe, covering threat actor profiling, analytics repositories, defensive countermeasure matrices, and emerging technology frameworks.
+
+---
+
+## 📌 Room Overview
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+* **Room:** MITRE
+* **Category:** Cyber Threat Intelligence (CTI) / Threat Hunting / Defensive Engineering
+* **User:** kaviboy
+* **Tasks Completed:** 8 / 8
+* **Skills Tested:** Threat Actor Profiling (ATT&CK), Operational Detection Rules (CAR), Countermeasure Mapping (D3FEND), Emerging Domain Security (AADAPT & ATLAS).
+
+---
+
+## 🧭 Key Frameworks & Knowledge Domains
+
+### 1. MITRE ATT&CK® Framework & Threat Intelligence
+* **Adversary Profiling:** Evaluated threat actor profiles such as **Mustang Panda (G0129)**, analyzing associated aliases (TA416, RedDelta, BRONZE PRESIDENT, STALEY TAURUS, etc.) and targeted industries across diplomatic, non-governmental, and research entities.
+* **ATT&CK Navigator:** Utilized ATT&CK Navigator layers to visualize attack paths spanning Reconnaissance, Initial Access (*Spearphishing Link/Attachment*), Execution (*PowerShell, Command Interpreter*), and Persistence (*Registry Run Keys / Autostart*).
+
+### 2. MITRE Cyber Analytics Repository (CAR)
+* Examined detection-focused analytics designed to identify specific adversary TTPs in host telemetry.
+* **Featured Analytic:** `CAR-2020-09-001: Scheduled Task - FileAccess` — detection mechanism for Windows Task Scheduler persistence and execution via creation/modification of files in `C:\Windows\Tasks` or `C:\Windows\System32\Tasks`.
+
+### 3. MITRE D3FEND™ Framework
+* Navigated the defensive countermeasure knowledge graph to align defensive capabilities against offensive ATT&CK techniques.
+* **Featured Countermeasure:** `D3-UBA (User Behavior Analysis)` — leveraging statistical algorithms and anomaly detection to identify malicious insider behavior and unexpected activity patterns.
+
+### 4. Specialized & Emerging MITRE Frameworks
+* **MITRE AADAPT™:** Evaluated specialized threat vectors targeting modern technology stacks (`ADT3025: Scrape Blockchain Data` under Collection tactic).
+* **MITRE ATLAS™:** Analyzed threat intelligence matrices for Artificial Intelligence and Machine Learning assets (`AML.T0068: LLM Prompt Obfuscation` under Defense Evasion).
+
+---
+
+## 🔍 Practical Lab Breakdown
+
+| Task | Topic | Key Focus & Reference Material |
+| :--- | :--- | :--- |
+| **Task 1** | Introduction | Overview of MITRE ecosystem resources |
+| **Task 2** | ATT&CK® Framework | Tactics, Techniques, Sub-techniques, and Matrices |
+| **Task 3** | ATT&CK in Operation | Real-world threat scenario mapping & ATT&CK Navigator |
+| **Task 4** | ATT&CK for Threat Intelligence | Threat Actor profiling (Mustang Panda / G0129) |
+| **Task 5** | Cyber Analytics Repository (CAR) | Threat detection rules & analytic coverage (`CAR-2020-09-001`) |
+| **Task 6** | MITRE D3FEND Framework | Countermeasure Knowledge Graph (`D3-UBA`) |
+| **Task 7** | Other MITRE Projects | Emerging matrices: MITRE AADAPT (`ADT3025`) & MITRE ATLAS (`AML.T0068`) |
+| **Task 8** | Conclusion | Practical summary and learning path integration |
+
+---
+
+## 📸 Lab Evidence & Verification
+
+### Threat Intelligence & ATT&CK Mapping
+![Mustang Panda Profile]<img width="1365" height="646" alt="1 1" src="https://github.com/user-attachments/assets/7379dcf2-9669-4d03-a1a4-a3bcbcaed7f5" />
+![ATT&CK Navigator Layer]<img width="1365" height="645" alt="1 2" src="https://github.com/user-attachments/assets/2e615a74-228c-4090-9cab-172747d28aaf" />
+![MITRE ATT&CK Groups]<img width="1365" height="646" alt="1 3" src="https://github.com/user-attachments/assets/1151c3e6-2d39-46e2-b3f7-c76ad05a3df1" />
+### Cyber Analytics & Defensive Countermeasures
+![CAR Scheduled Task Analytic]<img width="1365" height="647" alt="1 4" src="https://github.com/user-attachments/assets/5c522c60-d854-4cf2-a788-9a8d1ed3bd6f" />
+![D3FEND User Behavior Analysis]<img width="1365" height="646" alt="1 5" src="https://github.com/user-attachments/assets/e014736f-a8ba-44e0-ba5a-18c79341b840" />
+
+![D3FEND Countermeasure Matrix]
+### Specialized & Emerging Frameworks
+![MITRE AADAPT Blockchain Scraping]<img width="1365" height="645" alt="1 7" src="https://github.com/user-attachments/assets/c643d0b7-1c6e-4624-ab72-7e385f2b92ea" />
+![MITRE ATLAS LLM Prompt Obfuscation]<img width="1365" height="646" alt="1 8" src="https://github.com/user-attachments/assets/26c1ec5c-0945-4a67-84af-33c87b72ffff" />
+
+### Room Progress & Completion
+![TryHackMe Task List]<img width="1365" height="646" alt="2" src="https://github.com/user-attachments/assets/c68eae00-58b3-4c01-b2ba-7b57ac8ca057" />
+![TryHackMe Room Completed]<img width="1365" height="647" alt="3" src="https://github.com/user-attachments/assets/2ce0003b-25c2-4219-aa79-2de37133b67c" />
