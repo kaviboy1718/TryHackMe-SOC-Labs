@@ -1506,3 +1506,195 @@ A comprehensive walkthrough and Security Operations Center (SOC) breakdown analy
 ### Room Progress & Completion
 ![TryHackMe Task List]<img width="1365" height="646" alt="2" src="https://github.com/user-attachments/assets/c68eae00-58b3-4c01-b2ba-7b57ac8ca057" />
 ![TryHackMe Room Completed]<img width="1365" height="647" alt="3" src="https://github.com/user-attachments/assets/2ce0003b-25c2-4219-aa79-2de37133b67c" />
+
+
+
+
+
+# TryHackMe: Summit — Complete Writeup & Defense Guide
+
+## 📌 Room Metadata
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+* **Room Name:** Summit
+* **Category:** Defensive Security / Threat Hunting / Detection Engineering
+* **User:** kaviboy
+* **Completion Status:** 100% Complete
+
+---
+
+
+## 📐 Detection Matrix & Pyramid Mapping
+
+| Tier | Level | Sample Binary | Extracted Artifact / Behavioral Pattern | Defensive Action / Rule Applied | MITRE ATT&CK ID |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Hash Values** | 1 | `sample1.exe` | `9c550591a25c6228cb7d74d970d133d75c961ffed2ef7180144859cc09efca8c` | Added SHA256 to EDR Blocklist | N/A |
+| **IP Addresses** | 2 | `sample2.exe` | Destination IP: `154.35.10.113:4444` | Firewall Egress Deny Rule | N/A |
+| **Domain Names** | 3 | `sample3.exe` | Domain: `emudyn.bresonicz.info` | DNS Filtering Deny Rule | N/A |
+| **Host Artifacts** | 4 | `sample4.exe` | Key: `...\Real-Time Protection`<br>Name: `DisableRealtimeMonitoring`<br>Value: `1` | Sysmon Registry Modification Rule | Defense Evasion (TA0005) |
+| **Tools** | 5 | `sample5.exe` | Remote IP/Port: `any`<br>Payload Size: `97 bytes`<br>Frequency: `1800 seconds` | Sysmon Network Connection Rule | Command & Control (TA0011) |
+| **TTPs** | 6 | `sample6.exe` | Path: `%temp%`<br>File Name: `exfiltr8.log` | Sysmon File Creation & Modification Rule | Collection (TA0009) |
+
+---
+
+## 🔍 Level-by-Level Walkthrough
+
+### 🚨 Level 1: Hash Values (Trivial)
+
+#### 1. Analysis & Artifact Extraction
+Submitted `sample1.exe` to PicoSecure Malware Sandbox. Identified static file hash matching Metasploit payload signature:
+* **SHA256:** `9c550591a25c6228cb7d74d970d133d75c961ffed2ef7180144859cc09efca8c`
+
+![Level 1 Sandbox Analysis]<img width="1365" height="646" alt="1 1" src="https://github.com/user-attachments/assets/83e4c62f-e04f-4249-a642-8530e7345bcb" />
+
+#### 2. EDR Rule Configuration
+Added the SHA256 string directly into the EDR Hash Blocklist engine to prevent binary execution across endpoints.
+
+![Level 1 Hash Block Rule]<img width="1365" height="644" alt="1 2" src="https://github.com/user-attachments/assets/14ba1d9d-4f3e-4069-924c-7752a5b57cf4" />
+
+#### 3. Adversary Reaction
+Sphinx acknowledged the block but noted that recompiling or re-packing source code alters hash values instantaneously.
+
+![Level 1 Email Response]<img width="1365" height="494" alt="1 3" src="https://github.com/user-attachments/assets/f26f8526-5cbe-4a4e-8521-7e0451da18f2" />
+
+---
+
+### 🌐 Level 2: IP Addresses (Easy)
+
+#### 1. Analysis & Artifact Extraction
+Inspected process network activity for `sample2.exe` (`PID: 1927`). Captured direct socket connections over non-standard C2 port `4444`:
+* **Target C2 IP:** `154.35.10.113`
+
+![Level 2 Network Log Analysis]<img width="1365" height="645" alt="2 1" src="https://github.com/user-attachments/assets/95b8c179-1504-4671-88d7-41eb3ccf7f11" />
+
+#### 2. Firewall Rule Configuration
+Configured an Egress rule in Firewall Rule Manager targeting the command-and-control server IP:
+* **Rule Type:** Egress
+* **Destination IP:** `154.35.10.113`
+* **Action:** Deny
+
+![Level 2 Firewall Deny Rule]<img width="1365" height="646" alt="2 2" src="https://github.com/user-attachments/assets/e1cd0a00-a22d-441d-b211-2fd53826117f" />
+
+#### 3. Adversary Reaction
+Sphinx stated that IP blocklists create minor inconvenience, as adversaries can migrate infrastructure to new hosting providers quickly.
+
+![Level 2 Email Response]<img width="1365" height="538" alt="2 3" src="https://github.com/user-attachments/assets/0ad5bf47-6ba0-4186-a899-2263b3752c5f" />
+
+---
+
+### 🏷️ Level 3: Domain Names (Simple)
+
+#### 1. Analysis & Artifact Extraction
+Analyzed fallback DNS queries triggered by `sample3.exe` attempting to resolve C2 domain infrastructure:
+* **Malicious Domain:** `emudyn.bresonicz.info`
+
+![Level 3 DNS Logs]<img width="1365" height="646" alt="3 1" src="https://github.com/user-attachments/assets/a0a7488d-75ce-4847-ad75-68c139dcbdb4" />
+
+#### 2. DNS Rule Configuration
+Added a deny rule in DNS Rule Manager under the Malware category:
+* **Domain Name:** `emudyn.bresonicz.info`
+* **Category:** Malware
+* **Action:** Deny
+
+![Level 3 DNS Block Rule]<img width="1364" height="647" alt="3 2" src="https://github.com/user-attachments/assets/3598273c-611c-4f5d-9849-10a54f85c63e" />
+
+#### 3. Adversary Reaction
+Sphinx noted that revoking domain infrastructure increases financial overhead and forces waiting times for DNS propagation.
+
+![Level 3 Email Response]<img width="1363" height="530" alt="3 3" src="https://github.com/user-attachments/assets/988205da-7e30-4990-8349-b6d321d15715" />
+
+---
+
+### 💻 Level 4: Host Artifacts (Annoying)
+
+#### 1. Analysis & Artifact Extraction
+Reviewed host system activity for `sample4.exe`. Captured registry manipulation aiming to neutralize local Windows Defender real-time protection:
+* **Registry Key:** `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Real-Time Protection`
+* **Registry Name:** `DisableRealtimeMonitoring`
+* **Value:** `1`
+
+![Level 4 Registry Log Analysis]<img width="1365" height="646" alt="4 1" src="https://github.com/user-attachments/assets/ccdd76f4-2b8f-4841-87df-cdebcef0b023" />
+
+#### 2. Sysmon Detection Rule
+Configured a host-based Sysmon Registry Modification detection rule mapped to **MITRE ATT&CK Defense Evasion (TA0005)**:
+* **Registry Key:** `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Real-Time Protection`
+* **Registry Name:** `DisableRealtimeMonitoring`
+* **Value:** `1`
+* **ATT&CK ID:** `Defense Evasion (TA0005)`
+
+![Level 4 Sysmon Registry Rule]<img width="1365" height="645" alt="4 2" src="https://github.com/user-attachments/assets/95db43a3-ebef-45ed-9a68-0d71eaf65e55" />
+
+#### 3. Adversary Reaction
+Sphinx acknowledged that host artifact detection destroyed local execution scripts, forcing them to re-architect back-end communication frameworks.
+
+![Level 4 Email Response]<img width="1365" height="647" alt="4 3" src="https://github.com/user-attachments/assets/c1825d0a-4ead-4ef5-b423-b448b6da0b57" />
+
+---
+
+### 🛠️ Level 5: Tools & Network Artifacts (Challenging)
+
+#### 1. Analysis & Artifact Extraction
+Evaluated `outgoing_connections.log` attached to `sample5.exe`. Identified automated C2 SSL beaconing behavior executing consistently every 30 minutes (1800s) carrying a uniform 97-byte payload:
+* **Payload Size:** `97 bytes`
+* **Beacon Frequency:** `1800 seconds`
+
+![Level 5 Connection Log Analysis]<img width="1365" height="647" alt="5 1" src="https://github.com/user-attachments/assets/ae636fad-711f-4df6-92c9-585318f2bf24" />
+
+#### 2. Sysmon Detection Rule
+Configured a Sysmon Network Connection rule targeting beacon behavior mapped to **MITRE ATT&CK Command and Control (TA0011)**:
+* **Remote IP:** `any`
+* **Remote Port:** `any`
+* **Size (bytes):** `97`
+* **Frequency (seconds):** `1800`
+* **ATT&CK ID:** `Command and Control (TA0011)`
+
+![Level 5 Sysmon Network Rule]<img width="1365" height="644" alt="5 2" src="https://github.com/user-attachments/assets/6345bf2e-c23c-4d47-92a2-73de25bf31f2" />
+
+#### 3. Adversary Reaction
+Sphinx reported that detecting tool behaviors invalidated their entire framework, forcing significant financial and retraining investment.
+
+![Level 5 Email Response]<img width="1365" height="644" alt="5 3" src="https://github.com/user-attachments/assets/865900da-050e-438d-9455-1c63e10328f8" />
+
+---
+
+### 🥷 Level 6: TTPs — Tactics, Techniques & Procedures (Tough)
+
+#### 1. Command Log & Behavioral Analysis
+Reviewed `commands.log` for `sample6.exe`. Identified automated discovery and exfiltration staging scripts executing local commands and piping system data to `%temp%\exfiltr8.log`:
+
+```cmd
+dir c:\ >> %temp%\exfiltr8.log
+dir "c:\Documents and Settings" >> %temp%\exfiltr8.log
+dir "c:\Program Files\" >> %temp%\exfiltr8.log
+dir d:\ >> %temp%\exfiltr8.log
+net localgroup administrator >> %temp%\exfiltr8.log
+ver >> %temp%\exfiltr8.log
+systeminfo >> %temp%\exfiltr8.log
+ipconfig /all >> %temp%\exfiltr8.log
+netstat -ano >> %temp%\exfiltr8.log
+net start >> %temp%\exfiltr8.log
+```
+
+![Level 6 Exfiltration Commands]<img width="1365" height="646" alt="6 1" src="https://github.com/user-attachments/assets/2da5eb92-9d2e-48a9-a83a-44332f868253" />
+
+#### 2. Sysmon Detection Rule
+Created a Sysmon File Creation and Modification detection rule targeting the exfiltration staging artifact mapped to **MITRE ATT&CK Collection (TA0009)**:
+* **File Path:** `%temp%`
+* **File Name:** `exfiltr8.log`
+* **ATT&CK ID:** `Collection (TA0009)`
+
+![Level 6 Sysmon File Rule]<img width="1365" height="645" alt="6 2" src="https://github.com/user-attachments/assets/cc2f6318-2b38-4e46-ade4-bb326182e3c5" />
+
+#### 3. Adversary Surrender & Final Verification
+Detecting behavioral TTPs placed defense at the apex of the Pyramid of Pain. Sphinx officially surrendered, stating that changing core operational habits requires too much research and retraining.
+
+![Level 6 Surrender Email]<img width="1364" height="490" alt="6 3" src="https://github.com/user-attachments/assets/a62e3c2c-4ebf-469d-b929-60bb6dd73934" />
+
+![Final Inbox Status]
+
+<img width="451" height="645" alt="8" src="https://github.com/user-attachments/assets/61ffa863-a0bb-428c-ba39-f183907f258f" />
+
+---
+
+## 🏆 Room Completion Banner
+
+![TryHackMe Room Complete]<img width="1365" height="646" alt="7" src="https://github.com/user-attachments/assets/2b3ac6e7-f73a-4f26-a76c-5b643ca44858" />
