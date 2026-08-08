@@ -1698,3 +1698,194 @@ Detecting behavioral TTPs placed defense at the apex of the Pyramid of Pain. Sph
 ## 🏆 Room Completion Banner
 
 ![TryHackMe Room Complete]<img width="1365" height="646" alt="7" src="https://github.com/user-attachments/assets/2b3ac6e7-f73a-4f26-a76c-5b643ca44858" />
+
+
+
+
+# 🛡️ Threat Hunting & Incident Response Report: E-Corp APT Investigation
+
+![MITRE ATT&CK](https://img.shields.io/badge/Framework-MITRE%20ATT%26CK-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Threat%20Neutralized-success?style=for-the-badge)
+![Domain](https://img.shields.io/badge/Domain-SOC%20%2F%20Threat%20Hunting-red?style=for-the-badge)
+
+---
+
+## 📌 Investigation Overview
+
+| Metric | Details |
+| :--- | :--- |
+| **Target Organization** | E-Corp Enterprise Infrastructure |
+| **Threat Actor** | Advanced Persistent Threat (APT) |
+| **Primary Objective** | Exfiltration of Intellectual Property (SharePoint) |
+| **Attack Vector** | Phishing E-mail with Malicious Attachment |
+| **Final Outcome** | 🛑 **Intercepted & Neutralized** (Data Exfiltration Blocked) |
+
+---
+
+## 📋 Executive Summary
+
+> **CRITICAL INCIDENT SUMMARY**  
+> SOC analysts identified and neutralized a sophisticated intrusion campaign targeting E-Corp's core information repositories. Proactive threat hunting verified that while the adversary achieved internal foothold and credential movement, containment controls successfully prevented the egress of sensitive intellectual property.
+
+The threat lifecycle progressed across the following operational phases:
+* 🎯 **Initial Access:** Delivered via spearphishing emails containing malicious attachments.
+* ⚙️ **Execution & Persistence:** Built on native Windows scripting environments (`powershell.exe` & `cmd.exe`) and auto-run registry keys.
+* 🥷 **Defense Evasion:** Executed via proxy binary execution utilizing `rundll32.exe`.
+* 🔎 **Discovery & Lateral Movement:** Internal reconnaissance via `tcpdump` and lateral pivot through `SMB/Windows Admin Shares`.
+* 📦 **Collection & C2 Egress:** Staging inside **SharePoint** with attempted egress over external and multi-hop proxy networks.
+
+---
+
+## 🛠️ Investigation Methodology
+
+The investigation was aligned with the **MITRE ATT&CK Framework** to map observed adversary behaviors across endpoint event logs, registry modifications, process telemetry, and network traffic captures.
+
+### 🗺️ Mapped ATT&CK Matrix Summary
+
+| Tactic | Technique | MITRE ID | Artifact / Indicator |
+| :--- | :--- | :--- | :--- |
+| **Initial Access** | Spearphishing Attachment | `T1566.001` | Malicious email deliverable |
+| **Execution** | Command and Scripting Interpreter | `T1059.001 / .003` | `powershell.exe` & `cmd.exe` |
+| **Persistence** | Registry Run Keys / Startup Folder | `T1547.001` | Obfuscated startup registry entry |
+| **Defense Evasion** | System Binary Proxy Execution | `T1218.011` | `rundll32.exe` execution |
+| **Discovery** | Network Sniffing | `T1040` | `tcpdump` binary deployment |
+| **Lateral Movement**| Remote Services | `T1021.002` | SMB / Windows Admin Shares (`C$`, `ADMIN$`) |
+| **Collection** | Information Repositories | `T1213.002` | Unauthorized SharePoint access |
+| **Command & Control**| Proxy | `T1090.002 / .003`| External & Multi-hop Proxy channels |
+
+---
+
+## 🔍 Detailed Incident Analysis
+
+### 1. 🎯 Initial Access
+The threat actor established entry into E-Corp's internal ecosystem using **Spearphishing Attachments** (`T1566.001`). The attached malicious file contained embedded delivery code designed to initiate secondary stager downloads upon user execution.
+
+![ATT&CK Navigator - Initial Access - Spearphishing Attachment]<img width="1365" height="647" alt="1 1" src="https://github.com/user-attachments/assets/3a16c123-0473-41ba-90bd-d06a3f911f6f" />
+
+![Initial Access Verification]<img width="1365" height="421" alt="1 2" src="https://github.com/user-attachments/assets/6fd64719-e3c5-4206-93ec-62fa2ecb6fc8" />
+
+---
+
+### 2. ⚙️ Execution
+Following the initial trigger, the stager invoked native command-line shells to interpret obfuscated scripts. Analysis confirmed execution logs stemming from both **PowerShell** (`T1059.001`) and **Windows Command Shell** (`T1059.003`).
+
+![ATT&CK Navigator - Command and Scripting Interpreters]<img width="1365" height="646" alt="1 3" src="https://github.com/user-attachments/assets/d677b135-b5f2-4070-8bf7-1e6ee51fa1ad" />
+
+![Execution Verification]<img width="1365" height="520" alt="1 4" src="https://github.com/user-attachments/assets/d3eed98d-919b-4033-93d2-d522a1241edf" />
+
+---
+
+### 3. 🔄 Persistence
+To ensure persistent access across system restarts, the script modified auto-start entry locations in the Windows Registry, targeting **Registry Run Keys** (`T1547.001`) to automatically execute the secondary payload upon user logon.
+
+![ATT&CK Navigator - Registry Run Keys]<img width="1365" height="645" alt="1 5" src="https://github.com/user-attachments/assets/813ec611-a0c8-47c4-8f6b-7ae1dbc51585" />
+
+![Persistence Verification]<img width="1365" height="434" alt="1 6" src="https://github.com/user-attachments/assets/e836b4ff-12ad-4d74-ac92-5308386297ee" />
+
+---
+
+### 4. 🥷 Defense Evasion
+To bypass signature-based endpoint monitoring and security controls, the APT utilized Living-off-the-Land Binaries (LotBins). Specifically, **Rundll32** (`rundll32.exe` - `T1218.011`) was leveraged to proxy the execution of untrusted dynamic-link libraries (DLLs).
+
+![ATT&CK Navigator - System Binary Proxy Execution (Rundll32)]<img width="1365" height="638" alt="1 7" src="https://github.com/user-attachments/assets/2fea7e1d-f477-47b9-9ffc-260b78becfff" />
+
+![Defense Evasion Verification]<img width="1363" height="540" alt="1 8" src="https://github.com/user-attachments/assets/4b6c75db-eabb-441d-84c8-49752d8ad6b1" />
+
+---
+
+### 5. 🔎 Discovery
+Once host persistence was secured, the adversary dropped the packet capture tool `tcpdump` on the host to perform internal **Network Sniffing** (`T1040`). This allowed the actor to analyze subnet traffic and locate high-value target assets.
+
+![ATT&CK Navigator - Discovery / Network Sniffing]<img width="1365" height="644" alt="1 9" src="https://github.com/user-attachments/assets/8285815e-38c9-48e8-be28-9eef3c1bc65f" />
+
+![Discovery Verification]<img width="1365" height="359" alt="1 10" src="https://github.com/user-attachments/assets/c7beff90-cee4-4cf2-a471-aaaef66bc5df" />
+
+![ATT&CK Navigator Discovery Layer Details]<img width="1365" height="644" alt="1 11" src="https://github.com/user-attachments/assets/653ea262-a22f-4353-87ff-b92b55f64247" />
+
+![Progress Check 1]<img width="1365" height="352" alt="1 12" src="https://github.com/user-attachments/assets/81b8bc3f-608a-4106-a74e-613ef9a09f4e" />
+
+---
+
+### 6. 🚀 Lateral Movement
+Leveraging harvested network credentials, the APT traversed the corporate network via **SMB / Windows Admin Shares** (`T1021.002`) (e.g., `ADMIN$`, `C$`), enabling remote process execution across adjacent servers.
+
+![ATT&CK Navigator - Remote Services / SMB Shares]<img width="1364" height="646" alt="1 13" src="https://github.com/user-attachments/assets/09c4e9e9-9b98-4b46-9f7b-fb2f200e9abd" />
+
+![Lateral Movement Verification]<img width="1365" height="443" alt="1 14" src="https://github.com/user-attachments/assets/97d8ebbe-a43e-42f7-ac26-30056c9aa3eb" />
+
+---
+
+### 7. 📦 Collection
+The adversary pivoted directly toward E-Corp's core intellectual property repository: **SharePoint** (`T1213.002`). Unauthorized queries and file access logs confirmed intent to stage sensitive enterprise files for exfiltration.
+
+![ATT&CK Navigator - Information Repositories / Sharepoint]<img width="1365" height="647" alt="1 15" src="https://github.com/user-attachments/assets/1f2eb2c5-f22a-467e-a997-ad423ff7a81c" />
+
+![Collection Verification]<img width="1365" height="392" alt="1 16" src="https://github.com/user-attachments/assets/7b136eb7-9d77-49f4-9175-3d168ebcdfe6" />
+
+---
+
+### 8. 🌐 Command & Control / Exfiltration
+Due to outbound egress restrictions at E-Corp's perimeter, the APT attempted to establish C2 communication and exfiltration pipelines using **External Proxies** (`T1090.002`) and **Multi-hop Proxies** (`T1090.003`). Proactive blocking of these egress proxy nodes prevented any data transfer.
+
+![ATT&CK Navigator - Proxy Infrastructure]<img width="1365" height="646" alt="1 17" src="https://github.com/user-attachments/assets/9ee12387-ef6c-4c9a-acfa-dd147f22e7e0" />
+
+![Command & Control Verification]<img width="1365" height="495" alt="1 18" src="https://github.com/user-attachments/assets/34c9a349-b322-416d-940c-161db9bbf9ad" />
+
+![Full ATT&CK Matrix Overview]<img width="1363" height="643" alt="1 19" src="https://github.com/user-attachments/assets/a6529b16-cf7d-48bd-b23e-9b81982979c0" />
+
+![Final Task Verification]<img width="1365" height="625" alt="1 20" src="https://github.com/user-attachments/assets/5cf912a7-512d-4f5c-aa5e-e583790337fa" />
+
+---
+
+### 🏆 Mission Accomplished
+![Room Completed Banner]<img width="1365" height="644" alt="1 21" src="https://github.com/user-attachments/assets/37b50c60-425f-4612-8d99-964d875ef435" />
+
+---
+
+## ⚡ Detection & SIEM Queries
+
+Below are production-ready SIEM queries to detect these TTPs in an enterprise logging environment:
+
+### 1. Obfuscated PowerShell Execution
+```kql
+process.name: "powershell.exe" AND process.args: ("-EncodedCommand" OR "-e " OR "-nop" OR "-w hidden" OR "-enc")
+```
+
+### 2. Registry Persistence (Run Key Addition)
+```kql
+event.code: "13" AND target.path: "*\\Software\\Microsoft\\Windows\\CurrentVersion\\Run*"
+```
+
+### 3. Suspicious Rundll32 Execution
+```kql
+process.name: "rundll32.exe" AND NOT (process.parent.name: "explorer.exe" OR process.parent.name: "svchost.exe")
+```
+
+### 4. Sniffing Utility Execution on Endpoints
+```kql
+process.name: ("tcpdump.exe" OR "tshark.exe" OR "windump.exe") AND NOT (user.name: "admin_*")
+```
+
+### 5. Administrative Share Access (SMB)
+```kql
+event.code: "5140" AND share.name: ("*\\ADMIN$" OR "*\\C$")
+```
+
+---
+
+## 💡 Mitigation & Defensive Recommendations
+
+> [!IMPORTANT]
+> A multi-layered defense strategy combining host isolation, strict access controls, and network filtering is required to prevent similar APT campaigns.
+
+### 🔴 Immediate Incident Remediation
+* **Host Isolation:** Immediately isolate all endpoints exhibiting `tcpdump` execution or anomalous `rundll32.exe` parent-child activity.
+* **Credential Invalidation:** Reset passwords and revoke active tokens for all Active Directory user accounts involved in the SMB and SharePoint sessions.
+* **Perimeter Blocking:** Block all external IP addresses and multi-hop proxy domains associated with the C2 infrastructure at the firewall level.
+
+### 🔵 Strategic Enterprise Hardening
+* **Email Attachment Security:** Enforce strict attachment rules at the secure email gateway (SEG) to block container/script formats (`.iso`, `.vbs`, `.js`, `.xlsm`) and run automated sandbox checks.
+* **Attack Surface Reduction (ASR):** Enable Windows ASR rules prohibiting Office applications from launching child processes.
+* **PowerShell Hardening:** Force **Constrained Language Mode (CLM)** system-wide and enable **Script Block Logging (Event ID 4104)**.
+* **Restrict Admin Shares:** Restrict SMB admin share connections using local Windows Firewall rules and enforce **Network Level Authentication (NLA)**.
+* **Data Loss Prevention (DLP):** Implement granular DLP monitoring on SharePoint deployments and enforce conditional access policies for unmanaged devices.
