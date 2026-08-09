@@ -1889,3 +1889,151 @@ event.code: "5140" AND share.name: ("*\\ADMIN$" OR "*\\C$")
 * **PowerShell Hardening:** Force **Constrained Language Mode (CLM)** system-wide and enable **Script Block Logging (Event ID 4104)**.
 * **Restrict Admin Shares:** Restrict SMB admin share connections using local Windows Firewall rules and enforce **Network Level Authentication (NLA)**.
 * **Data Loss Prevention (DLP):** Implement granular DLP monitoring on SharePoint deployments and enforce conditional access policies for unmanaged devices.
+
+
+
+
+<div align="center">
+
+# 🎣 TryHackMe: Phishing Emails 1
+
+[![TryHackMe](https://img.shields.io/badge/TryHackMe-Phishing%20Emails%201-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
+[![Role](https://img.shields.io/badge/Role-SOC%20Analyst%20Level%201-blue?style=for-the-badge&logo=shield)](https://tryhackme.com)
+[![Status](https://img.shields.io/badge/Status-Completed%20100%25-brightgreen?style=for-the-badge&logo=checkmark)](https://tryhackme.com)
+[![Tools](https://img.shields.io/badge/Tools-Thunderbird%20%7C%20CyberChef%20%7C%20APIVoid-orange?style=for-the-badge)](https://github.com)
+
+**An end-to-end investigation and analysis write-up of malicious email artifacts, header inspection, payload extraction, and indicator defanging.**
+
+---
+
+</div>
+
+## 📌 Table of Contents
+- [Overview](#-overview)
+- [Learning Objectives](#-learning-objectives)
+- [Key Skills & Tools Covered](#-key-skills--tools-covered)
+- [Step-by-Step Investigation Walkthrough](#-step-by-step-investigation-walkthrough)
+  - [Task 1 & 2: Email Inspection & Domain Verification](#task-1--2-email-inspection--domain-verification)
+  - [Task 3 & 4: Network Hops & Raw Header Analysis](#task-3--4-network-hops--raw-header-analysis)
+  - [Task 5: Email Body & Encoded Attachment Analysis](#task-5-email-body--encoded-attachment-analysis)
+  - [Task 6: Brand Impersonation & BEC Analysis](#task-6-brand-impersonation--bec-analysis)
+  - [CyberChef Processing & IoC Defanging](#cyberchef-processing--ioc-defanging)
+  - [Task 7: Room Completion](#task-7-room-completion)
+- [Repository Structure & Image Placement](#-repository-structure--image-placement)
+
+---
+
+## 🎯 Overview
+This repository documents the detailed walkthrough and investigation methodology for the **Phishing Emails 1** room on TryHackMe. As a SOC Level 1 Analyst, understanding how to dissect phishing emails is crucial for triage, extracting Indicators of Compromise (IoCs), and mitigating initial access vector threats.
+
+![Room Tasks Overview]<img width="1365" height="645" alt="1 9" src="https://github.com/user-attachments/assets/7d86dc0d-ece1-432b-802b-3b9711e3e70f" />
+
+---
+
+## 🧠 Learning Objectives
+* ✉️ **Email Architecture:** Understand envelopes, headers, message bodies, and attachments.
+* 🔎 **Header Forensics:** Trace email server hops using `X-Originating-IP`, `Received`, and authentication controls (`SPF`, `DKIM`, `DMARC`).
+* 🔓 **Payload Decoding:** Safely inspect and decode Base64 encoded email attachments without execution.
+* 🛡️ **IoC Handling:** Process, normalize, and defang network artifacts before documentation.
+
+---
+
+## 🛠️ Key Skills & Tools Covered
+
+| Tool / Concept | Category | Purpose / Utility |
+| :--- | :--- | :--- |
+| **Mozilla Thunderbird** | Email Client | Inspecting `.eml` files, visual layout triage, and viewing raw source headers |
+| **Mousepad** | Text Editor | Direct examination of raw text-based email exports (`.txt`) |
+| **CyberChef** | Data Analysis | Base64 decoding, string transformations, and IP/Domain defanging |
+| **APIVoid** | Threat Intelligence | Decoding Base64 attachments and generating safe document previews |
+| **Header Forensics** | SOC Triage | Identifying originating senders, spoofed domains, and infrastructure hops |
+
+---
+
+## 🚀 Step-by-Step Investigation Walkthrough
+
+### Task 1 & 2: Email Inspection & Domain Verification
+The investigation begins by inspecting `email1.eml` within Mozilla Thunderbird to evaluate sender details and visual layout.
+
+![Thunderbird Email 1 View]<img width="673" height="647" alt="1 1" src="https://github.com/user-attachments/assets/47eae2f0-b1dc-48ca-8206-a24854b57142" />
+
+* **From Header:** `newsletters@ant.anki-tech.com`
+* **Recipient:** `alexa@yahoo.com`
+* **Subject:** `Help protect your budget by protecting your home`
+* **Observation:** Thunderbird automatically restricted remote content to prevent tracking pixels and malicious external calls.
+
+---
+
+### Task 3 & 4: Network Hops & Raw Header Analysis
+By pressing `Ctrl + U` in Thunderbird, we open the raw message source for `email1.eml` to analyze network headers.
+
+![Email 1 Source Code]<img width="677" height="645" alt="1 2" src="https://github.com/user-attachments/assets/cba1ea17-e7d5-40b6-ba90-9392af140733" />
+
+* **Originating IP Address:** `43.255.56.161` (Extracted from `X-Originating-Ip`)
+* **Return-Path:** `reback-a3970-837890-838253-c8b776d9=952622232=8@ant.anki-tech.com`
+* **Email Security Checks:** 
+  * `SPF`: `pass`
+  * `DKIM`: `pass`
+  * `DMARC`: `pass`
+
+---
+
+### Task 5: Email Body & Encoded Attachment Analysis
+Next, we examine `email2.txt`, which contains a raw MIME attachment encoded in Base64.
+
+![Email 2 Attachment Raw Text]<img width="671" height="644" alt="1 3" src="https://github.com/user-attachments/assets/f111614c-4340-4cbd-b14e-ef712d88318e" />
+
+* **Attachment Filename:** `zmqpalgh.pdf`
+* **Content-Type:** `application/pdf`
+* **Encoding Type:** `base64`
+
+To analyze the file safely, the raw Base64 string was extracted and passed into an online decoder tool (APIVoid) to render the attachment safely.
+
+![APIVoid PDF Generation]<img width="1365" height="645" alt="1 4" src="https://github.com/user-attachments/assets/5b0dafad-53d2-4ee5-8153-7639b9a01c2b" />
+
+---
+
+### Task 6: Brand Impersonation & BEC Analysis
+In `email3.eml`, we analyze an email purporting to be an official order confirmation from **Home Depot**.
+
+![Thunderbird Email 3 View]<img width="674" height="646" alt="1 5" src="https://github.com/user-attachments/assets/b08a7bb6-16ff-4adb-8ebc-88b942f0322a" />
+
+* **Sender Display Name:** `Thank you! Home Depot`
+* **Actual Sending Address:** `support@teckbe.com`
+* **Phishing Tactic:** Domain Mismatch / Brand Impersonation (`Home Depot` vs `teckbe.com`).
+
+We then inspect the raw source code of `email3.eml` to pull back-end server indicators.
+
+![Email 3 Source Code]<img width="672" height="645" alt="1 6" src="https://github.com/user-attachments/assets/e3d58e5b-b9c3-4069-8206-d3b3f1ba7a47" />
+
+* **Originating IP:** `103.234.236.83`
+* **Receiving Mail Server Domain:** `atlas102.free.mail.gq1.yahoo.com`
+
+---
+
+### CyberChef Processing & IoC Defanging
+To ensure safety in incident reports, all malicious network indicators must be defanged prior to distribution.
+
+#### 1️⃣ Defanging Originating IP Address
+Using CyberChef's `Defang IP Addresses` operation:
+
+![Defanging IP Address in CyberChef]<img width="1365" height="646" alt="1 7" src="https://github.com/user-attachments/assets/37f0999a-e5d1-4fad-a718-936c7d72d536" />
+
+* **Raw IP:** `103.234.236.83`
+* **Defanged IP:** `103[.]234[.]236[.]83`
+
+#### 2️⃣ Verifying Mail Server Domain String
+Using CyberChef to verify and standardize the receiving mail domain:
+
+![Analyzing Domain in CyberChef]<img width="1364" height="641" alt="1 8" src="https://github.com/user-attachments/assets/a5def9ab-adf3-43e5-ba02-1da5ee96154d" />
+
+* **Mail Server Domain:** `atlas102.free.mail.gq1.yahoo.com`
+
+---
+
+### Task 7: Room Completion
+All questions and tasks for the room were successfully completed.
+
+![Room Completed Banner]<img width="1365" height="647" alt="2" src="https://github.com/user-attachments/assets/a2879186-0fcc-462b-9e6b-ea11291c67ca" />
+
+---
