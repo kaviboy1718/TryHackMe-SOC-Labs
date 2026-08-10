@@ -2037,3 +2037,139 @@ All questions and tasks for the room were successfully completed.
 ![Room Completed Banner]<img width="1365" height="647" alt="2" src="https://github.com/user-attachments/assets/a2879186-0fcc-462b-9e6b-ea11291c67ca" />
 
 ---
+
+
+
+
+# TryHackMe: Phishing Emails 3 - Writeup & Analysis
+
+## Overview
+This repository contains a detailed walkthrough and analysis report for the **Phishing Emails 3** room on TryHackMe. The investigation covers email header inspection, sandbox dynamic analysis using ANY.RUN, metadata extraction, and exploit identification across multiple phishing scenarios involving malicious PDF documents and Excel spreadsheets.
+
+* **Category:** Digital Forensics & Incident Response (DFIR) / Phishing Analysis
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+* **Tools Used:** 
+  * Mozilla Thunderbird
+  * ANY.RUN Interactive Malware Analysis Sandbox
+  * ExifTool / PDF & Office Metadata Tools
+  * Linux Terminal
+
+---
+
+## Task 8: Case 1 & Case 2 — Email & PDF Malware Analysis
+
+### 1. Phishing Email Analysis (Netflix Phishing Email)
+The investigation begins with analyzing an incoming email claiming that a Netflix account is on hold due to billing issues.
+
+![Netflix Email Preview]<img width="676" height="646" alt="1 1" src="https://github.com/user-attachments/assets/7057c513-66f1-4af7-9e0a-2de1a07611ae" />
+
+#### Header Analysis
+Inspecting the email headers using Mozilla Thunderbird reveals inconsistencies between the claimed sender, the envelope domain, and authentication protocols:
+
+![Netflix Email Source Headers]<img width="678" height="618" alt="1 2" src="https://github.com/user-attachments/assets/58b27f2d-9605-4222-8341-7d23efc4538a" />
+
+![Thunderbird Link Context Menu]<img width="675" height="645" alt="1 3" src="https://github.com/user-attachments/assets/fd3ef607-58e3-40b3-a0af-92835022fb59" />
+
+* **From Header:** `N e t f l i x <JGQ47wazXe1xyVBrkeDg-JOg7ODDQwWdR@JOg7ODDQwWdR-yVkCaBKTNp.gogolecloud.com>`
+* **Return-Path:** `<postmaster@etekno.xyz>`
+* **X-Originating-IP:** `209.85.167.226`
+* **SPF Record:** `none` (Domain `etekno.xyz` does not designate permitted sender hosts)
+* **DMARC Record:** `unknown`
+
+---
+
+### 2. Malicious Document Analysis (`Payment-updateid.pdf`)
+The second scenario involves analyzing a PDF file (`Payment-updateid.pdf`) submitted to ANY.RUN for dynamic sandbox execution.
+
+![PDF Open & Initial Sandbox View]<img width="1365" height="645" alt="2 1" src="https://github.com/user-attachments/assets/de72d911-6b2b-43c6-8e05-530af783551d" />
+
+#### Sandbox Execution & Indicator Details
+The sample runs inside a Windows 7 32-bit virtual machine environment:
+
+![ANY.RUN Process Details and Score]<img width="1365" height="646" alt="2 2" src="https://github.com/user-attachments/assets/3c9c2f89-9d72-4186-8f30-4385218dc30b" />
+
+![PDF File Hashes and EXIF Metadata]<img width="1365" height="646" alt="2 3" src="https://github.com/user-attachments/assets/8bc561ad-c761-4504-9a56-8e66f141dcb0" />
+
+![ANY.RUN Network Connections]<img width="1365" height="647" alt="2 4" src="https://github.com/user-attachments/assets/97c980d3-8ad4-4866-937e-8ca20503a623" />
+
+![ANY.RUN Threat Activity & Indicators]<img width="1365" height="646" alt="2 5" src="https://github.com/user-attachments/assets/f4b5ed8a-a2ee-4bff-87df-5a944eeda1b7" />
+
+#### File Metadata & Hashes
+| Attribute | Value |
+| :--- | :--- |
+| **Filename** | `Payment-updateid.pdf` |
+| **File Size** | `188.67 KB` |
+| **MIME Type** | `application/pdf` |
+| **PDF Version** | `1.7` |
+| **Author** | `PayPal Support` |
+| **Creator / Producer** | `Microsoft® Word 2016` |
+| **Creation Date** | `2021:03:10 19:22:08+08:00` |
+| **MD5 Hash** | `4A2775EAE2EBEF41901A3F08D3B857C8` |
+| **SHA1 Hash** | `8B3439F5EA2F20C6BE329C4C6B8EAA9CC439233B` |
+| **SHA256 Hash** | `CC6F1A04B10BCB168AEEC8D870B97BD7C20FC161E8310B5BCE1AF8ED420E2C24` |
+
+#### Extracted Network IOCs
+* **Malicious Connection:** `2.16.107.24:443` (`acroipm2.adobe.com`)
+* **Malicious Traffic:** `142.250.186.132` (`www.google.com`)
+* **Network Threat:** `svchost.exe` (PID: 1776) triggered `ET INFO TLS Handshake Failure`
+
+---
+
+## Task 9: Case 3 — Excel Exploit Analysis (CVE-2017-11882)
+
+The third scenario covers an Excel spreadsheet attachment (`CBJ200620039539.xlsx`) that weaponizes an old Microsoft Office vulnerability to trigger remote code execution.
+
+![Excel Execution and EQNEDT32 Process]<img width="1365" height="645" alt="3 1" src="https://github.com/user-attachments/assets/89c181a0-6e8c-40ce-9c6a-1d96bb0ee80e" />
+
+### Hashes & File Information
+
+![Excel Hashes and File Structure]<img width="1365" height="645" alt="3 2" src="https://github.com/user-attachments/assets/c590eb27-9137-4cb1-b82e-e96cf8f7d7eb" />
+
+* **Filename:** `CBJ200620039539.xlsx`
+* **File Size:** `15.05 KB`
+* **MIME Type:** `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+* **MD5 Hash:** `F7F4EC2A0ADC9CC33CDBC7D548A6BEF9`
+* **SHA1 Hash:** `D460315F92AA3DCA63617431883834ED94C09F45`
+* **SHA256 Hash:** `5F94A66E0CE78D17AFC2DD27FC17B44B3FFC13AC5F42D3AD6A5DCFB36715F3EB`
+
+---
+
+### Dynamic Execution & Network Connections
+
+![DNS Requests and Network Traffic]<img width="1365" height="647" alt="3 3" src="https://github.com/user-attachments/assets/a29fc983-7cbf-42bf-9460-6f65072a4b3e" />
+
+![Behavioral Activities and CVE Exploitation]<img width="1365" height="644" alt="3 4" src="https://github.com/user-attachments/assets/fe8acfa9-5ebe-4b14-80a0-6d111749ba88" />
+
+#### Process Execution Flow
+1. `EXCEL.EXE /dde` (PID: `1016`) — Initial document execution.
+2. `EQNEDT32.EXE -Embedding` (PID: `1068`) — Equation Editor vulnerability triggered (**CVE-2017-11882**).
+3. `ntvdm.exe -i1` (PID: `1328`) — Spawns as part of payload execution.
+
+#### HTTP Requests & Malicious URLs
+| Host Domain | IP Address | Status Code | URL Target |
+| :--- | :--- | :--- | :--- |
+| `biz9holdings.com` | `204.11.56.48` | `302 Found` | `http://biz9holdings.com/INVOICE/COVID19.exe` |
+| `findresults.site` | `103.224.182.251` | `302 Found` | `http://findresults.site/?rpid=2POQ7BC1G` |
+| `ww38.findresults.site` | `75.2.11.242` | `200 OK` | `http://ww38.findresults.site/?rpid=2POQ7BC1G&subid1=...` |
+
+---
+
+## Task Questions & Answers Summary
+
+| Task # | Question / Analysis Point | Finding / Value |
+| :--- | :--- | :--- |
+| **Task 8** | PDF Sandbox Threat Score | `50 / 100` |
+| **Task 8** | PDF Author Metadata | `PayPal Support` |
+| **Task 8** | Primary Process Executed | `AcroRd32.exe` (PID: `2088`) |
+| **Task 9** | Exploited Vulnerability CVE | `CVE-2017-11882` |
+| **Task 9** | Exploit Process Name | `EQNEDT32.EXE` |
+| **Task 9** | First Download URL Target | `http://biz9holdings.com/INVOICE/COVID19.exe` |
+
+---
+
+## Room Completion
+
+![TryHackMe Room Completed]<img width="1365" height="644" alt="4" src="https://github.com/user-attachments/assets/b10f890f-69a6-4b6c-834f-94688532d561" />
+
+* **Completed Tasks:** 10 / 10
+* **Status:** Completed
