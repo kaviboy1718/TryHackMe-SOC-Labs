@@ -2173,3 +2173,117 @@ The third scenario covers an Excel spreadsheet attachment (`CBJ200620039539.xlsx
 
 * **Completed Tasks:** 10 / 10
 * **Status:** Completed
+
+
+
+
+# TryHackMe: Phishing Emails 4 & Wireshark PCAP Traffic Analysis
+
+## Overview
+This writeup documents the network traffic analysis of email communications and packet captures (`traffic.pcap`) captured using Wireshark. The investigation focuses on SMTP traffic inspection, protocol responses, error codes, email delivery failure tracking, user-agent/X-Mailer identification, and attachment extraction.
+
+* **Category:** Digital Forensics & Incident Response (DFIR) / Network Traffic Analysis
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+* **Tools Used:** 
+  * Wireshark (Network Protocol Analyzer)
+  * Linux Terminal
+
+---
+
+## Technical Analysis & Walkthrough
+
+### 1. SMTP Handshake & TCP Session Inspection
+Analyzing initial connection packets between internal host `10.12.19.101` and remote IP `67.97.216.244` over TCP port `1042`.
+
+![TCP Handshake and Connection Analysis]<img width="672" height="647" alt="1 1" src="https://github.com/user-attachments/assets/c9008683-349f-4a06-96fb-dd78c2293bb6" />
+
+---
+
+### 2. Identifying Spam Filters & Blocklists (`smtp.response.code`)
+Filtering for SMTP response codes to identify rejected connections. Frame 73 shows connection attempts from `17.171.2.68` to internal host `10.12.19.101` triggering IP lookup checks (`dnsbl-lookup.cgi?ip=173.66.46.112`).
+
+![SMTP Filter and Spamhaus Blocked IP Check]<img width="677" height="645" alt="1 2" src="https://github.com/user-attachments/assets/9a2d0860-5dfb-40f6-9190-b80dd2d3ea09" />
+
+---
+
+### 3. Service Banners & Mail Server Greetings (`smtp.response.code==220`)
+Filtering for code `220` (SMTP Service Ready Banners) highlights incoming connections from external IPs, including `216.97.88.9` sending an ESMTP Sendmail greeting (`unicode.org`).
+
+![SMTP 220 Service Ready Banners]<img width="678" height="644" alt="1 3" src="https://github.com/user-attachments/assets/71ac1222-cfdc-4472-92bb-c2f3ef5357e2" />
+
+---
+
+### 4. Spamhaus Real-time Blackhole List (RBL) Rejection Analysis
+Filtering string searches for `spamhaus` reveals SMTP code `553 5.3.0 Email blocked using spamhaus.org`, pointing to malicious origin IP `173.66.46.112`.
+
+![Spamhaus String Match Analysis]<img width="682" height="644" alt="1 4" src="https://github.com/user-attachments/assets/179ba617-7752-4fb8-a4ba-e6c4fffc476b" />
+
+---
+
+### 5. Mailbox Rejection Verification (`553 Requested action not taken`)
+Inspecting packet #156 reveals the explicit SMTP error parameters: `553 5.3.0 Email blocked using spamhaus.org - see http://www.spamhaus.org`.
+
+![SMTP Response 553 Detailed Inspection]<img width="675" height="642" alt="1 5" src="https://github.com/user-attachments/assets/e3d57cc9-1de3-4218-94ac-32e8ea948897" />
+
+---
+
+### 6. Storage & Security Block Rejections (`smtp.response.code==552`)
+Searching for error code `552` (Requested mail action aborted) reveals incoming connections from `173.194.66.27` returning `552-5.7.0 This message was blocked because its content presents a potential security issue`.
+
+![SMTP Response 552 Security Block Analysis]<img width="678" height="645" alt="1 6" src="https://github.com/user-attachments/assets/62e4f125-722a-45f1-88cc-5934d3d79ac7" />
+
+---
+
+### 7. Full Session Stream & Rejection Trace
+Tracking the full ESMTP conversation showing `EHLO unicode.org` followed by `MAIL FROM:<MAILER-DAEMON@unicode.org>` resulting in security rejections.
+
+![SMTP Conversation Stream Tracking]<img width="679" height="643" alt="2 1" src="https://github.com/user-attachments/assets/d2658f18-7088-4f0f-8f0e-a051f1b82672" />
+
+---
+
+### 8. Attachment Extraction & MIME Encapsulation Analysis
+Filtering for packet payloads containing raw email body MIME data shows `Content-Disposition: attachment; filename="document.zip"`.
+
+![Extracting Attachment Name document.zip]<img width="679" height="647" alt="2 2" src="https://github.com/user-attachments/assets/6e8fb34d-b687-444f-b3d8-8decc40462d8" />
+
+---
+
+### 9. Delivery Failure Message Tracking (Non-Delivery Reports - NDR)
+Analyzing delivery failure notifications inside packet #270 reveals failure reason `Host 212.253.25.152 is not responding` when attempting delivery to recipient `talkback@mozilla.org`.
+
+![Delivery Failure Notification Trace]<img width="680" height="647" alt="2 3" src="https://github.com/user-attachments/assets/1a225b5b-3ac2-40ed-8f65-85970269032f" />
+
+---
+
+### 10. Email Client Profiling via `X-Mailer` Headers (`imf`)
+Filtering for Internet Message Format (`imf`) headers reveals mail client metadata:
+`X-Mailer: Microsoft Outlook Express 6.00.2600.0000` and `X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000`.
+
+![Extracting X-Mailer User-Agent Metadata]<img width="678" height="644" alt="2 4" src="https://github.com/user-attachments/assets/69b0bbdb-a820-4733-bc86-52f02be02d48" />
+
+---
+
+### 11. Malicious Executable Attachment Identification (`attachment.scr`)
+Inspecting encapsulated multipart attachments reveals an executable payload named `attachment.scr` (`Content-Type: application/octet-stream`), containing Base64 encoded PE headers starting with `TVqQAAMAAAA...`.
+
+![Identifying Suspicious Executable Payload attachment.scr]<img width="676" height="646" alt="2 5" src="https://github.com/user-attachments/assets/ecc1a70f-f3cc-4490-a105-1623f283c213" />
+
+---
+
+## Room Completion
+
+![Phishing Prevention Banner]<img width="651" height="326" alt="3" src="https://github.com/user-attachments/assets/c6e63091-cf32-4388-a6db-48fbd178a982" />
+
+---
+
+## Summary of Key Findings & Network IOCs
+
+| Parameter / Indicator | Extracted Value / Finding |
+| :--- | :--- |
+| **Internal Receiver Host** | `10.12.19.101` |
+| **Blocked Origin IPs** | `173.66.46.112`, `173.194.66.27`, `216.97.88.9` |
+| **RBL Blocklist Used** | `spamhaus.org` |
+| **SMTP Error Codes** | `553` (Blocked by RBL) / `552` (Content/Security issue) |
+| **Extracted Mail Client** | `Microsoft Outlook Express 6.00.2600.0000` |
+| **Extracted Attachments** | `document.zip`, `attachment.scr` (PE Executable File) |
+| **Failed Recipient Address** | `talkback@mozilla.org` |
