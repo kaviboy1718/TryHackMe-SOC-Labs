@@ -2287,3 +2287,153 @@ Inspecting encapsulated multipart attachments reveals an executable payload name
 | **Extracted Mail Client** | `Microsoft Outlook Express 6.00.2600.0000` |
 | **Extracted Attachments** | `document.zip`, `attachment.scr` (PE Executable File) |
 | **Failed Recipient Address** | `talkback@mozilla.org` |
+
+
+
+
+# TryHackMe: Greenholt v2 Phishing Email Forensics & Header Analysis
+
+## Executive Summary
+This investigation analyzed a suspicious phishing email artifact (`challenge.eml`) disguised as an official SWIFT payment confirmation. Forensic analysis revealed a spoofed sender domain, failed email authentication controls, and a malicious Cabinet archive attachment (`SWT_#09674321____PDF__.CAB`). Hash identification verified the attachment as **Trojan.MSIL/Loki (LokiBot)**, a prominent info-stealer. 
+
+**Core SOC Takeaway:** Security controls should strictly enforce DMARC `quarantine`/`reject` policies and block executable/archive attachments with deceptive double extensions (`.PDF__.CAB`) at the secure email gateway (SEG) boundary.
+
+---
+
+## Overview
+This documentation details the forensic investigation of a suspicious email artifact (`challenge.eml`) as part of the Greenholt v2 challenge on TryHackMe. The analysis encompasses email header examination, IP intelligence gathering via WHOIS, SPF/DMARC domain authentication checks, payload hash extraction, and VirusTotal threat analysis.
+
+* **Category:** Digital Forensics & Incident Response (DFIR) / Email Analysis
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+* **Tools Used:** 
+  * Mozilla Thunderbird (Email Client / Raw Source Viewer)
+  * Linux Terminal (`sha256sum`)
+  * Whois / ARIN Lookup
+  * MXToolbox (SPF & DMARC Record Lookup)
+  * VirusTotal
+
+---
+
+## Table of Contents
+* [Executive Summary](#executive-summary)
+* [Overview](#overview)
+* [Technical Analysis & Walkthrough](#technical-analysis--walkthrough)
+  * [1. Initial Email Content Inspection](#1-initial-email-content-inspection)
+  * [2. Identifying Subject & Lure Details](#2-identifying-subject--lure-details)
+  * [3. Raw Email Header Analysis & Authentication Failures](#3-raw-email-header-analysis--authentication-failures)
+  * [4. Originating IP Identification](#4-originating-ip-identification)
+  * [5. IP WHOIS Reconnaissance](#5-ip-whois-reconnaissance)
+  * [6. Domain Authentication Analysis: SPF Lookup](#6-domain-authentication-analysis-spf-lookup)
+  * [7. Domain Authentication Analysis: DMARC Lookup](#7-domain-authentication-analysis-dmarc-lookup)
+  * [8. MIME Body & Malicious Payload Attachment Analysis](#8-mime-body--malicious-payload-attachment-analysis)
+  * [9. File Hash Extraction (SHA-256)](#9-file-hash-extraction-sha-256)
+  * [10. VirusTotal Malicious Payload Analysis](#10-virustotal-malicious-payload-analysis)
+* [Room Completion](#room-completion)
+* [Summary of Key Findings & Indicators of Compromise (IOCs)](#summary-of-key-findings--indicators-of-compromise-iocs)
+
+---
+
+## Technical Analysis & Walkthrough
+
+### 1. Initial Email Content Inspection
+Opening `challenge.eml` in Mozilla Thunderbird reveals a lure message pretending to be a SWIFT funds transfer confirmation from `Mr. James Jackson <info@mutawamarine.com>` sent to `webmaster@redacted.org`. An attachment named `SWT_#09674321____PDF__.CAB` (400 KB) is embedded.
+
+![Initial Phishing Email Inspection in Thunderbird]<img width="679" height="643" alt="1 1" src="https://github.com/user-attachments/assets/627a3ae6-2634-4e20-805d-50dfebfb4be8" />
+
+---
+
+### 2. Identifying Subject & Lure Details
+Extracting the subject line (`Transfer Reference Number:(09674321)`) used in the financial pretexting attack.
+
+![Subject Line Analysis]<img width="676" height="643" alt="1 2" src="https://github.com/user-attachments/assets/8b51591d-c37b-4b4d-a0b5-4a467cb0e818" />
+
+---
+
+### 3. Raw Email Header Analysis & Authentication Failures
+Inspecting the raw email source in Thunderbird reveals critical metadata headers:
+* **Return-Path:** `<info@mutawamarine.com>`
+* **Received-SPF:** `fail` (Domain `mutawamarine.com` does not designate sending IP as permitted)
+* **DMARC:** `unknown`
+
+![Raw Email Header Inspection]<img width="679" height="645" alt="1 3" src="https://github.com/user-attachments/assets/98aa51c7-541b-4c10-8428-e7a64dba2dd7" />
+
+---
+
+### 4. Originating IP Identification
+Tracing the hop headers (`Received: from ...`) isolates the true sending IP address `192.119.71.157` (`hwsrv-737338.hostwindsdns.com`).
+
+![Originating IP Extraction]<img width="677" height="647" alt="1 4" src="https://github.com/user-attachments/assets/4254b482-2eb8-4e70-ab28-1c6ebfb6de22" />
+
+---
+
+### 5. IP WHOIS Reconnaissance
+Performing a WHOIS lookup on IP `192.119.71.157` identifies the hosting provider as **HostPapa** (NetRange: `192.119.64.0 - 192.119.127.255`, OrgName: `HostPapa`, OrgId: `HOSTP-7`).
+
+![WHOIS IP Analysis]<img width="1365" height="644" alt="1 5" src="https://github.com/user-attachments/assets/ff3e978d-7901-4061-ae64-33d25602d7f3" />
+
+---
+
+### 6. Domain Authentication Analysis: SPF Lookup
+Querying MXToolbox for `mutawamarine.com`'s SPF record yields:
+`v=spf1 include:spf.protection.outlook.com -all`
+Since the email originated from HostPapa (`192.119.71.157`) and not Microsoft Outlook servers, the SPF check correctly failed.
+
+![MXToolbox SPF Record Lookup]<img width="1365" height="647" alt="1 6" src="https://github.com/user-attachments/assets/2bf946a0-7b0b-40f7-9ad0-b4c343512973" />
+
+---
+
+### 7. Domain Authentication Analysis: DMARC Lookup
+Querying MXToolbox for DMARC records reveals:
+`v=DMARC1; p=quarantine; fo=1`
+The domain has configured DMARC policy to quarantine messages failing authentication checks.
+
+![MXToolbox DMARC Record Lookup]<img width="1365" height="647" alt="1 7" src="https://github.com/user-attachments/assets/bb04d972-5f69-4c8e-af24-56f8810127ab" />
+
+---
+
+### 8. MIME Body & Malicious Payload Attachment Analysis
+Inspecting the MIME structure shows HTML body styling followed by the attachment definition:
+* **Content-Type:** `application/octet-stream`
+* **Filename:** `SWT_#09674321____PDF__.CAB` (Double extension masquerading as a PDF)
+
+![MIME Attachment Source Analysis]<img width="676" height="645" alt="1 8" src="https://github.com/user-attachments/assets/8a1cba2c-cf68-4037-a693-cba8b97a669c" />
+
+---
+
+### 9. File Hash Extraction (`SHA-256`)
+In the Linux Terminal, calculating the SHA-256 hash of the extracted `.CAB` file:
+
+sha256sum SWT_#09674321____PDF__.CAB
+# Hash: 2e91c533615a9bb8929ac4bb76707b2444597ce063d84a4b33525e25074fff3f
+
+![SHA-256 Hash Generation]<img width="679" height="646" alt="1 9" src="https://github.com/user-attachments/assets/fa8224d6-fe11-4ccf-ae94-1cde6e929bce" />
+
+---
+
+### 10. VirusTotal Malicious Payload Analysis
+Submitting the SHA-256 hash to VirusTotal yields **51/64 security vendor detections**. The file is identified as a malicious loader/stealer associated with the **Trojan.MSIL/Loki** (LokiBot) malware family.
+
+![VirusTotal Threat Detection Results]<img width="1365" height="647" alt="1 10" src="https://github.com/user-attachments/assets/184a7eb2-0cdc-470b-80a7-358bf45042c5" />
+
+---
+
+## Room Completion
+
+![TryHackMe Greenholt v2 Room Completion]<img width="1365" height="646" alt="1 11" src="https://github.com/user-attachments/assets/f6ac4b7c-3452-42fe-bcf3-c0e6b4b6dd9e" />
+
+---
+
+## Summary of Key Findings & Indicators of Compromise (IOCs)
+
+| Parameter / Indicator | Extracted Value / Finding |
+| :--- | :--- |
+| **Sender Address** | `Mr. James Jackson <info@mutawamarine.com>` |
+| **Recipient Address** | `webmaster@redacted.org` |
+| **Reply-To Address** | `info.mutawamarine@mail.com` |
+| **Originating IP** | `192.119.71.157` |
+| **IP Hosting Provider** | HostPapa / Hostwinds |
+| **SPF Result** | `FAIL` (Unauthorized sending IP) |
+| **DMARC Policy** | `p=quarantine` |
+| **Attachment Filename** | `SWT_#09674321____PDF__.CAB` |
+| **Attachment SHA-256** | `2e91c533615a9bb8929ac4bb76707b2444597ce063d84a4b33525e25074fff3f` |
+| **Malware Family** | Trojan.MSIL/Loki (LokiBot / Kryptik) |
