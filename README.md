@@ -2437,3 +2437,80 @@ Submitting the SHA-256 hash to VirusTotal yields **51/64 security vendor detecti
 | **Attachment Filename** | `SWT_#09674321____PDF__.CAB` |
 | **Attachment SHA-256** | `2e91c533615a9bb8929ac4bb76707b2444597ce063d84a4b33525e25074fff3f` |
 | **Malware Family** | Trojan.MSIL/Loki (LokiBot / Kryptik) |
+
+
+
+
+
+# Snapped Phish-ing Line – TryHackMe Writeup
+
+## Overview
+This writeup documents the step-by-step investigation of the **Snapped Phish-ing Line** challenge room on TryHackMe. The objective is to analyze a captured phishing kit, trace its internal mechanisms, inspect server configurations, identify exfiltrated data pathways, and recover the hidden flag.
+
+---
+
+## Lab Execution & Findings
+
+### Step 1: Initial Lab Environment Setup
+The target Virtual Machine was booted up to access the dedicated forensic analysis desktop environment. This provided access to the terminal, web browser, and local file system required for the investigation.
+![Initial Setup]<img width="674" height="644" alt="1 1" src="https://github.com/user-attachments/assets/05fb0f05-61de-4d82-80d0-dfd8d2c0fa89" />
+
+### Step 2: Investigating the Web Server Root Directory
+Navigated to `/var/www/html/` to list all web documents and discover directory structures. This revealed the underlying files and folders making up the hosted phishing site.
+![Directory Listing]<img width="678" height="646" alt="1 2" src="https://github.com/user-attachments/assets/736c5079-5b38-48ce-9b08-ec237072d445" />
+
+### Step 3: Analyzing `index.php` Source Code
+Inspected `index.php` using a text editor to analyze how incoming HTTP requests are handled. The code revealed initial parameter checks and redirection rules used to route victims to the phishing page.
+![index.php Analysis]<img width="676" height="645" alt="1 3" src="https://github.com/user-attachments/assets/5388bbc0-79b9-4ecf-927d-628f95aa8fef" />
+
+### Step 4: Extracting Network Connections (`netstat`)
+Executed `netstat -tuln` in the terminal to inspect all active listening ports and network connections. This verified which web and service ports were actively running on the host.
+![Netstat Execution]<img width="668" height="647" alt="1 4" src="https://github.com/user-attachments/assets/4ede007e-3cbd-4576-b429-941b2f6677b5" />
+
+### Step 5: Checking Running Processes (`ps aux`)
+Ran `ps aux` to trace running system processes and identify active web services. This confirmed Apache and PHP background processes were executing from the web directory.
+![Process Listing]<img width="673" height="641" alt="1 5" src="https://github.com/user-attachments/assets/d7bdae94-4581-42f4-8c30-d75c7aab80e8" />
+
+### Step 6: Reviewing Web Server Virtual Host Configuration
+Inspected `/etc/apache2/sites-enabled/` to examine active Apache site configurations. This uncovered active domain aliases, document roots, and path rewrite rules configured on the server.
+![Apache Config]<img width="1365" height="646" alt="1 6" src="https://github.com/user-attachments/assets/1358d5cb-ea5b-41dc-b0c4-62775880431c" />
+
+### Step 7: Inspecting Phishing Directory Structure
+Navigated directly to the extracted phishing kit directory to identify processing scripts and asset folders. This mapped out the core files responsible for handling victim interactions.
+![Phishing Kit Directory]<img width="1365" height="646" alt="1 7" src="https://github.com/user-attachments/assets/52c88667-247b-40fd-b2b1-2ab01f0aca30" />
+
+### Step 8: Examining Credential Capture Logic
+Reviewed the core processing script to determine how user input is captured and formatted. The script constructs log entries containing captured emails, passwords, victim IP addresses, and User-Agent strings.
+![Credential Processing Logic]<img width="670" height="645" alt="1 8" src="https://github.com/user-attachments/assets/7c5c80c5-8bfd-476f-8d21-808ec8d6e117" />
+
+### Step 9: Locating Stored Victim Credentials
+Searched the phishing kit files to locate where captured credentials and telemetry are saved locally. Discovered log files used by the attacker to temporarily store intercepted credentials.
+![Exfiltrated Logs]<img width="671" height="645" alt="1 9" src="https://github.com/user-attachments/assets/3a8381e6-e758-4658-a65e-e5ee15afa5c7" />
+
+### Step 10: Tracing Exfiltration Mail Routing Configuration
+Inspected `submit.php` to identify how captured data is transmitted externally. The script compiles victim credentials into an email payload for exfiltration via PHP mail functions.
+![Exfiltration Configuration]<img width="679" height="647" alt="1 10" src="https://github.com/user-attachments/assets/169ab471-253c-4a83-9a2d-5c7e86494f24" />
+
+### Step 11: Identifying Attacker Email & C2 Infrastructure
+Analyzed line 49 of `submit.php` to extract hardcoded attacker details. The variable `$send` revealed the attacker's primary exfiltration address as `m3npat@yandex.com`.
+![Attacker C2 Details]<img width="680" height="644" alt="1 11" src="https://github.com/user-attachments/assets/3460a372-b38c-4858-8a52-9000d917f2f0" />
+
+### Step 12: Triggering the Flag / Secret Output
+Navigated to the target endpoint using the Firefox browser to execute the final stage of the kit script. This successfully rendered the hidden secret key directly in the browser output.
+* **Secret Key:** `fUxSVV8zSHRfaFQxd195NExwe01VAo=`
+![Secret Flag Extraction]<img width="680" height="646" alt="1 12" src="https://github.com/user-attachments/assets/2ab66d76-d09e-4764-b1e0-1c27463f210e" />
+
+### Step 13: Lab Completion
+Submitted the extracted flag into the TryHackMe platform. The flag was verified successfully, completing the **Snapped Phish-ing Line** challenge.
+![Lab Completion]<img width="1365" height="646" alt="1 13" src="https://github.com/user-attachments/assets/33c8ccf7-25ba-43b3-8e0c-5f55704de4d4" />
+
+---
+
+## Key Findings & Security Summary
+
+| Parameter | Extracted Detail |
+| :--- | :--- |
+| **Phishing Target** | Microsoft Office365 / Outlook Update |
+| **Attacker Exfiltration Email** | `m3npat@yandex.com` |
+| **Primary Artifact Script** | `submit.php` |
+| **Captured Secret / Flag** | `fUxSVV8zSHRfaFQxd195NExwe01VAo=` |
