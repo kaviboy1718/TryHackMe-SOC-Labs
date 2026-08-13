@@ -2514,3 +2514,68 @@ Submitted the extracted flag into the TryHackMe platform. The flag was verified 
 | **Attacker Exfiltration Email** | `m3npat@yandex.com` |
 | **Primary Artifact Script** | `submit.php` |
 | **Captured Secret / Flag** | `fUxSVV8zSHRfaFQxd195NExwe01VAo=` |
+
+
+
+
+# TryHackMe: Traffic Analysis Basics Write-up
+
+This repository contains the walkthrough, answers, and network traffic analysis process for the **Traffic Analysis Basics** room on TryHackMe.
+
+---
+
+## 🚀 Room Overview
+
+* **Room Name:** Traffic Analysis Basics
+* **Category:** Network Security / Traffic Analysis
+* **Platform:** [TryHackMe](https://tryhackme.com/)
+
+---
+
+## 🛠️ Walkthrough & Analysis
+
+### Scenario 1: Basic Web & File Traffic Analysis
+
+In this exercise, network topology and HTTP session details were analyzed to trace file downloads from external endpoints.
+
+#### Network Topology Setup
+![Network Topology - Scenario 1]<img width="666" height="646" alt="1 1" src="https://github.com/user-attachments/assets/c228d137-10c7-445d-a42a-5dbeefaf37b0" />
+
+#### HTTP Packet Details
+* **Source IP:** `203.0.113.200`
+* **Destination IP:** `192.168.0.3`
+* **Requested File / Attachment:** `install.ps1`
+* **HTTP Status Code:** `200 OK`
+
+![HTTP Packet Details]<img width="669" height="647" alt="1 2" src="https://github.com/user-attachments/assets/7650476b-75f1-4324-b9a0-fc0651a91d85" />
+
+---
+
+### Scenario 2: DNS Infiltration Investigation
+
+A workstation on the network was compromised, and malicious Command and Control (C2) instructions were transmitted via DNS TXT records.
+
+#### Identifying the Optimal Tap Placement
+To capture all DNS traffic efficiently, the network tap must be placed directly in front of the primary DNS server (`SRV-DNS`), as all external host DNS queries and replies route through this point.
+
+![DNS Infiltration Challenge Interface](<img width="671" height="645" alt="2 1" src="https://github.com/user-attachments/assets/a5e69485-aee9-4957-a1ea-79e2ae7edecf" />
+![Network Topology Map]<img width="670" height="645" alt="2 2" src="https://github.com/user-attachments/assets/b0b4dbf2-2f68-4603-91c8-009c532df0af" />
+![Correct TAP Placement on SRV-DNS]<img width="667" height="647" alt="2 3" src="https://github.com/user-attachments/assets/ee5852d6-6dd6-43aa-be83-af730826f050" />
+
+#### DNS Packet Stream Analysis
+Once the TAP was configured, DNS traffic streams were inspected for high-entropy or unexpected TXT record queries.
+
+![Captured DNS Packet Log]<img width="675" height="647" alt="2 4" src="https://github.com/user-attachments/assets/62c71e2c-e856-4479-8ee5-f8a3cf9962fe" />
+
+#### Extracting the Flag from DNS TXT Record
+* **Queried Domain:** `c2.tryhackme.thn`
+* **Query Type:** `TXT/IN`
+
+![DNS TXT Response Payload]<img width="662" height="407" alt="2 5" src="https://github.com/user-attachments/assets/10ca588e-191b-429b-8e59-d5a5765a7c64" />
+
+---
+
+## 🎉 Room Completion
+
+![Room Completion Badge]<img width="1365" height="645" alt="3" src="https://github.com/user-attachments/assets/2fe480c8-df87-43d3-acd1-5d4ab91be930" />
+
