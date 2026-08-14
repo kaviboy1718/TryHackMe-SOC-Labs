@@ -2579,3 +2579,119 @@ Once the TAP was configured, DNS traffic streams were inspected for high-entropy
 
 ![Room Completion Badge]<img width="1365" height="645" alt="3" src="https://github.com/user-attachments/assets/2fe480c8-df87-43d3-acd1-5d4ab91be930" />
 
+
+
+
+# TryHackMe: Wireshark: The Basics Walkthrough
+
+In this room, I walked through the fundamentals of Wireshark, learning how to inspect packet captures, extract hidden files, follow HTTP streams, and analyze network warnings. Here is how I tackled each part of the room step-by-step!
+
+---
+
+## Task 1: Getting Started & Examining Capture File Properties
+
+I started off by booting up the target environment and opening the main capture file, `Exercise.pcapng`, inside Wireshark. 
+
+![Wireshark Startup Interface]<img width="681" height="645" alt="1 1" src="https://github.com/user-attachments/assets/78a31203-4422-4d60-b99c-96c5ea60ad32" />
+
+Before diving into individual packets, I wanted to see what high-level metadata was hidden in the file. I navigated to **Statistics -> Capture File Properties**. Inside the file properties window, I spotted a custom file comment left by the author that contained our first flag:
+
+* **Capture File Comment Flag:** `TryHackMe_Wireshark_Demo`
+
+![Capture File Properties & Flag]<img width="674" height="641" alt="1 2" src="https://github.com/user-attachments/assets/c79049c3-9099-4878-95f9-e5587cf591d7" />
+
+I also spent some time checking the general packet list display to get familiar with frame structures and protocols.
+
+![Packet List Display]<img width="681" height="646" alt="1 3" src="https://github.com/user-attachments/assets/14f158b7-3cbb-4a3b-be7a-8c791d852134" />
+
+While I was still in the properties menu, I also checked the cryptographic hashes generated for the capture file itself. I located the SHA256 hash string for verification:
+
+* **SHA256 Hash:** `f446de335565fb0b0ee5e5a3266703c778b2f3dfad7efaeccb2da5641a6d6eb`
+
+![SHA256 Hash Details]<img width="676" height="645" alt="1 4" src="https://github.com/user-attachments/assets/f5c9355f-ac94-4374-8414-10a753625b68" />
+
+---
+
+## Task 2: Packet Details & Layer Analysis
+
+Next, I moved on to analyzing individual frame details and TCP reassembly streams.
+
+![HTTP & XML Payload Analysis]<img width="683" height="646" alt="2 1" src="https://github.com/user-attachments/assets/cf7b121b-0daf-4fc2-92bc-3180bd78a10d" />
+
+I inspected the frame timing headers to find the exact packet arrival timestamp down to the microsecond:
+
+* **Arrival Time:** `May 13, 2004 10:17:12.158193000 UTC`
+
+![Arrival Time Header]<img width="666" height="441" alt="2 2" src="https://github.com/user-attachments/assets/258f0d42-76fc-4e03-87c8-36979cd59605" />
+
+Looking into the IP header details for Packet 38, I checked the IP fields to find the Time to Live (TTL) value:
+
+* **Time to Live (TTL):** `47`
+
+![IP Header TTL Detail]<img width="673" height="448" alt="2 3" src="https://github.com/user-attachments/assets/1fb077db-4f1e-4131-a752-ead589322fc2" />
+
+![IP Header TTL Field Highlighted]<img width="679" height="620" alt="2 4" src="https://github.com/user-attachments/assets/091b4fc1-7051-47b4-8c84-56f6a0bdf49e" />
+
+I also observed how Wireshark reassembles multi-segment TCP payloads into unified application streams.
+
+![Reassembled TCP Payload]<img width="674" height="457" alt="2 5" src="https://github.com/user-attachments/assets/11af64b9-fe69-4159-ad67-d2e326853c7a" />
+
+---
+
+## Task 3: HTTP Stream Analysis, File Extraction & Expert Info
+
+Things started getting interesting here! I began looking into HTTP traffic to see what files were being transferred over the network. First, I examined the HTTP response headers to extract status codes and ETag tags.
+
+* **HTTP Response Code:** `200 OK`
+* **ETag Value:** `"9a01a-4696-7e354b00"`
+
+![HTTP Response Header and ETag]<img width="678" height="645" alt="3 1" src="https://github.com/user-attachments/assets/a8497968-ca5d-4f58-9b51-f6f1f8de681e" />
+
+When inspecting Packet 12, I checked the packet comments and found a repeating string designed as a red herring.
+
+![Packet Comment Window]<img width="674" height="641" alt="3 2" src="https://github.com/user-attachments/assets/ce91bd86-7ca9-4e01-9c4f-41fe4e29f6e8" />
+
+I exported the image payload (`image.jpg`) to my local environment and verified its integrity using terminal tools by running `md5sum image.jpg`:
+
+* **MD5 Hash Result:** `11cd574a42865a956ccde2d04495ebf`
+
+![Terminal MD5 Calculation]<img width="674" height="643" alt="3 3" src="https://github.com/user-attachments/assets/4a7d7c43-040f-418d-85ce-aefd49b6d73e" />
+
+Next, I wanted to extract hidden files transferred over HTTP. I went to **File -> Export Objects -> HTTP**, filtered for `.txt` files, and located an exported document (`note.txt`).
+
+![HTTP Object List Window]<img width="671" height="548" alt="3 4" src="https://github.com/user-attachments/assets/736806d3-84b5-4e8d-ab33-fa6b62786647" />
+
+Opening the extracted file revealed ASCII banner art indicating the alien name:
+
+* **Alien Name:** `PACKETMASTER`
+
+![Extracted note.txt ASCII Banner]<img width="670" height="644" alt="3 5" src="https://github.com/user-attachments/assets/2c9d2be9-a752-4daa-98bf-2d9c8e5f466b" />
+
+To wrap up Task 3, I opened Wireshark's built-in diagnostic tool via **Analyze -> Expert Information** to view protocol warnings and errors logged during the capture.
+
+* **HTTP Warnings Count:** `1636`
+
+![Wireshark Expert Info Window]<img width="679" height="646" alt="3 6" src="https://github.com/user-attachments/assets/ea85d673-3c01-4d03-96cf-db9e27abba11" />
+
+---
+
+## Task 4: Filtering Traffic & Following Streams
+
+For the final task, I focused on filtering down the capture file using Wireshark display filters. I applied the filter `http` to isolate Web application requests.
+
+![Filtered HTTP Traffic]<img width="678" height="646" alt="4 1" src="https://github.com/user-attachments/assets/2a49c9da-5950-4af7-80f1-dbe508b489dd" />
+
+Finally, I inspected full session streams by right-clicking and selecting **Follow -> HTTP Stream** (`tcp.stream eq 12`). Reading through the raw HTTP session allowed me to find query parameters (`artist=2`) and identify the second artist's name:
+
+* **Artist Name:** `Blad3`
+
+![Following HTTP Stream 12]<img width="681" height="645" alt="4 2" src="https://github.com/user-attachments/assets/e590ad47-e5a3-4f75-ad82-ce8c8dfd82ad" />
+
+---
+
+## 🎉 Room Completion
+
+After submitting the final flag, I officially finished all tasks and completed the room!
+
+![TryHackMe Room Completed]<img width="1365" height="644" alt="5" src="https://github.com/user-attachments/assets/eedce4bd-b9aa-41b2-876b-27654124691a" />
+
