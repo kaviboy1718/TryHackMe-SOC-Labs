@@ -2695,3 +2695,144 @@ After submitting the final flag, I officially finished all tasks and completed t
 
 ![TryHackMe Room Completed]<img width="1365" height="644" alt="5" src="https://github.com/user-attachments/assets/eedce4bd-b9aa-41b2-876b-27654124691a" />
 
+
+
+
+# TryHackMe: Wireshark: Packet Operations Walkthrough
+
+In this room, I explored Wireshark's statistics tools, endpoint details, packet operations, and advanced display filters—focusing on analyzing resolved addresses, conversation tables, IP locations, load distribution, and target display filters. Here is how I completed each section step-by-step!
+
+---
+
+## Task 1: Address Resolution & Endpoint Analysis
+
+I started off by examining resolved hostnames in Wireshark under **Statistics -> Resolved Addresses**. 
+
+![Resolved Hostnames Window]<img width="677" height="610" alt="1 1" src="https://github.com/user-attachments/assets/0254f93e-caf3-4a5d-9e1c-776f33ee3ce9" />
+
+* **Resolved Hostname:** `bbc.map.fastly.net` mapped to `199.232.24.81`
+
+Next, I opened the **Conversations** window to analyze IPv4 traffic statistics.
+
+![IPv4 Conversations Table]<img width="669" height="451" alt="1 2" src="https://github.com/user-attachments/assets/0513f4d3-ebfd-464e-87c4-4920e3eca704" />
+
+I then inspected network statistics in the **Endpoints** window, reviewing MAC addresses and transferred packet volumes.
+
+![Ethernet Endpoints Details]<img width="675" height="644" alt="1 3" src="https://github.com/user-attachments/assets/063dcd61-f874-44cd-ab8a-aad1710fb9d2" />
+
+Navigating through IPv4 Endpoints revealed geographic information attached to target IP addresses.
+
+![IPv4 Endpoint Locations]<img width="668" height="459" alt="1 4" src="https://github.com/user-attachments/assets/8f619952-89ff-4663-91bb-760a9c47f43d" />
+
+Scrolling down the list displayed Autonomous System (AS) Organizations linked to the traffic.
+
+![AS Organization Details]<img width="669" height="455" alt="1 5(2)" src="https://github.com/user-attachments/assets/6fa09493-d035-4b05-92d1-b2692361d1b4" />
+
+I also checked specific endpoint IP entries and packet distribution statistics across sessions.
+
+![IPv4 Endpoint Statistics]<img width="667" height="424" alt="1 5" src="https://github.com/user-attachments/assets/22529431-6162-4d07-a839-0e3606f5d6d1" />
+
+---
+
+## Task 2: Protocol Statistics & Traffic Distribution
+
+Moving into Task 2, I opened the **Destinations and Ports** window to inspect top destination IPs and their port usage percentages.
+
+![Destinations and Ports Statistics]<img width="672" height="504" alt="2 1" src="https://github.com/user-attachments/assets/4b26265d-fa13-49eb-8a64-473a4c8f3cd9" />
+
+
+* **Top Destination IP:** `10.100.1.33` (accounting for 36.09% of traffic)
+
+Next, I analyzed DNS service statistics to measure request-response performance.
+
+![DNS Service Stats]<img width="657" height="449" alt="2 2" src="https://github.com/user-attachments/assets/93b9be91-6c0d-482f-a838-5f81c05407ad" />
+
+* **Average Request-Response Time:** `0.07` seconds
+
+I also checked traffic distribution details across DNS query types and service responses.
+
+![DNS Query & Response Analysis]<img width="664" height="482" alt="2 3" src="https://github.com/user-attachments/assets/9ccfe73c-4901-4837-bee5-299825368e11" />
+
+---
+
+## Task 3: Load Distribution & Display Filtering Basics
+
+In Task 3, I navigated to **Statistics -> Load Distribution** to analyze domain traffic distribution.
+
+![Load Distribution Window]<img width="670" height="596" alt="3 1" src="https://github.com/user-attachments/assets/9968d2d7-8fc1-432e-ab62-cdf4a3a3c96c" />
+
+* **Rad MSN Domain Count:** `39` packets routed to `rad.msn.com`
+
+Next, I filtered network traffic by Time-To-Live using the display filter `ip.ttl < 10` to isolate low-TTL packets.
+
+![Filter ip.ttl < 10]<img width="701" height="578" alt="3 2" src="https://github.com/user-attachments/assets/ee155489-0ba6-435f-a91a-89bd3f45b088" />
+
+* **Total Packets Displayed:** `66`
+
+I then filtered for target TCP port traffic using `tcp.port==4444`.
+
+![Filter tcp.port==4444]<img width="667" height="584" alt="3 3" src="https://github.com/user-attachments/assets/b4ea7e0d-142e-46b8-a1d0-da376f24a636" />
+
+* **Total Packets Displayed:** `63`
+
+Following that, I combined HTTP method filters with port criteria using `http.request.method==GET && tcp.port==80`.
+
+![Filter HTTP GET on Port 80]<img width="668" height="582" alt="3 4" src="https://github.com/user-attachments/assets/61dc77a8-97ee-4800-befb-80e6a92b5223" />
+
+* **Total Packets Displayed:** `52`
+
+Finally, I filtered for DNS A record queries using `dns.a`.
+
+![Filter dns.a]<img width="670" height="578" alt="3 5" src="https://github.com/user-attachments/assets/5928e400-e3ee-4278-bb43-c548728c18e8" />
+
+* **Total Packets Displayed:** `50`
+
+---
+
+## Task 4: Advanced Display Filters
+
+In Task 4, I practiced crafting complex logical and string matching filters. First, I targeted non-standard HTTP traffic using `http.server contains IIS && !tcp.port==80`.
+
+![Filter IIS Server Not Port 80]<img width="670" height="591" alt="4 1" src="https://github.com/user-attachments/assets/0b26ed62-1485-4dab-bf8c-95ffa3032f59" />
+
+* **Total Packets Displayed:** `21`
+
+Next, I isolated specific web server responses using exact string matching with `http.server == "Microsoft-IIS/7.5"`.
+
+![Filter Microsoft-IIS/7.5 Server]<img width="669" height="582" alt="4 2" src="https://github.com/user-attachments/assets/87be6dee-26e3-42ca-a42d-e2a1679269d0" />
+
+* **Total Packets Displayed:** `75`
+
+I then executed set member queries across multiple TCP ports using `tcp.port in {3333 4444 9999}`.
+
+![Filter tcp.port Set Membership]<img width="669" height="591" alt="4 3" src="https://github.com/user-attachments/assets/eb92aef8-75cc-4948-a61c-edc7a9c737e6" />
+
+* **Total Packets Displayed:** `223`
+
+Using regular expressions with string conversion, I filtered for even TTL values via `string(ip.ttl) matches "[02468]$"`.
+
+![Filter Regular Expression TTL Matches]<img width="670" height="580" alt="4 4" src="https://github.com/user-attachments/assets/1dd62f52-51d0-49b8-b54c-eec21632d3b8" />
+
+* **Total Packets Displayed:** `77289`
+
+Next, I analyzed invalid or uncalculated TCP checksums using `tcp.checksum.status==0`.
+
+![Filter TCP Checksum Status 0]<img width="670" height="587" alt="4 5" src="https://github.com/user-attachments/assets/3a21a4e7-c2fa-4144-b4e1-509016e57b50" />
+
+* **Total Packets Displayed:** `34185`
+
+Finally, I retrieved successful HTTP image downloads matching specific MIME types using `(http.response.code == 200 ) && (http.content_type matches "image(gif|jpeg)")`.
+
+![Filter Successful Image Content Responses]<img width="668" height="586" alt="4 6" src="https://github.com/user-attachments/assets/155439f7-b9ee-4e6a-ba7c-809aabf02e84" />
+
+* **Total Packets Displayed:** `261`
+
+---
+
+## 🎉 Room Completion
+
+![Room Completion Badge]<img width="1365" height="644" alt="5" src="https://github.com/user-attachments/assets/4dfd487f-2ff3-4422-afca-23c8950b9eae" />
+
+* **User:** kaviboy
+* **Status:** Room completed!
+* **Focus Area:** Wireshark Packet Operations, Statistics, & Advanced Display Filtering
