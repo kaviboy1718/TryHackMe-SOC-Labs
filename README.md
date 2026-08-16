@@ -3120,3 +3120,128 @@ Finally, I evaluated packet #231 to generate permissive IPFirewall ACL rules for
 
 * **Status:** Completed
 * **Focus Area:** Wireshark Advanced Filters, Protocol Analysis, FTP Stream Analysis, Log4j Payload Decoding, TLS Decryption (HTTP/2), Object Exporting, Firewall ACL Rule Generation, & Credential Extraction
+
+
+
+
+# 🔬 NetworkMiner Forensic Analysis & CTF Walkthrough
+
+## 📌 Project Overview
+This repository contains a comprehensive step-by-step network forensics writeup and packet analysis using **NetworkMiner 2.7.2**. The investigation covers parsing raw packet captures (`.pcap`), mapping active network hosts, reconstructing transmitted files and images, capturing cleartext credentials, extracting authentication hashes, and inspecting anomalous network traffic.
+
+### 🛠️ Tools & Technologies Used
+* **Primary Tool:** NetworkMiner 2.7.2 (Network Forensic Analysis Tool - NFAT)
+* **Protocols Analyzed:** HTTP, POP3, IMAP, DNS, NTLMSSP, TLS, TCP/IP
+* **Key Artifacts Extracted:** Plaintext passwords, NetNTLMv2 hashes, web payloads, reconstructed images, and email communications
+
+---
+
+## Part 1: Host Discovery & Basic Packet Analysis
+
+### Host Enumeration
+Loaded the capture file into NetworkMiner and sorted the host list by IP address in ascending order to map all active network endpoints.
+![Host Enumeration]<img width="673" height="581" alt="1 1" src="https://github.com/user-attachments/assets/06dfc109-5958-4c77-9635-6c179e4644cb" />
+
+### PCAP Metadata Verification
+Opened the Metadata window for `mx-3.pcap` to verify the frame count (460 frames), overall capture timeframe, and the MD5 hash checksum (`bb1df7cb425b1e0c2c83171a45787e16`).
+![PCAP Metadata Verification]<img width="672" height="582" alt="1 2" src="https://github.com/user-attachments/assets/66f62b07-a5c1-4b5a-aafc-1300aa68d637" />
+
+### MAC Address Identification
+Inspected host `145.253.2.203` to identify its MAC address (`FEFF20000100`) and noted shared physical address usage across multiple IP endpoints.
+![MAC Address Identification]<img width="674" height="574" alt="1 3" src="https://github.com/user-attachments/assets/89205e16-2990-42f7-a1d9-2f81d61738ae" />
+
+### Traffic Statistics Analysis
+Analyzed data transfer metrics for `65.208.228.223` (`www.ethereal.com`), recording an outgoing traffic total of 72 sent packets (76,368 bytes).
+![Traffic Statistics Analysis]<img width="677" height="583" alt="1 4" src="https://github.com/user-attachments/assets/d2f485e6-69d8-4587-9ee3-00acf3d54efa" />
+
+### Server Banner Grabbing
+Expanded Host Details for `65.208.228.223` to identify the web server software banner operating on TCP port 80 (Apache).
+![Server Banner Grabbing]<img width="680" height="589" alt="1 5" src="https://github.com/user-attachments/assets/c1699cc4-c7b3-4ec3-92d9-b67bf94a2723" />
+
+### NTLMSSP Authentication Capture
+Switched to the Credentials tab to capture active NTLMSSP authentication traffic between client `172.16.66.37` and server `172.16.66.36` for user `#B\Administrator`.
+![NTLMSSP Authentication Capture]<img width="680" height="585" alt="1 6" src="https://github.com/user-attachments/assets/a93319fa-715c-41be-be45-52cd4981fc68" />
+
+### NetNTLMv2 Hash Extraction
+Scrolled horizontally on the Credentials tab to extract the raw NetNTLMv2 response hash for offline password cracking attempt.
+![NetNTLMv2 Hash Extraction]<img width="676" height="580" alt="1 7" src="https://github.com/user-attachments/assets/f4e13e3a-2036-4dbe-a29e-2d9ea130f328" />
+
+---
+
+## Part 2: File Reconstruction, Anomalies & Message Inspection
+
+### Text File Analysis
+Opened the details for extracted file `index.EE08FE3A[1].txt` and inspected the hex content to reveal references to CentOS mirror repository paths.
+![Text File Analysis]<img width="675" height="578" alt="2 1" src="https://github.com/user-attachments/assets/c978dd2f-a1bd-4374-8943-847a6a03c9e8" />
+
+### HTML Artifact Hex Decoding
+Analyzed `index[1].html` and converted hex string `6C616E64657273` into cleartext ASCII to recover the name Ned Flanders.
+![HTML Artifact Hex Decoding]<img width="675" height="582" alt="2 2" src="https://github.com/user-attachments/assets/71660b4b-b97d-4c3e-9ded-8ef166b18bb1" />
+
+### Image Reconstruction
+Inspected reassembled graphic artifacts under the Images tab, identifying tracking pixel `ads.bmp` retrieved over HTTP port 80.
+![Image Reconstruction]<img width="822" height="618" alt="2 3" src="https://github.com/user-attachments/assets/11cdf350-a292-4064-8c4c-22e08892db2a" />
+
+### Network Anomaly Identification
+Checked the Anomalies tab for protocol errors and identified a TLS boundary mismatch error in frame 36255.
+![Network Anomaly Identification]<img width="827" height="584" alt="2 4" src="https://github.com/user-attachments/assets/cb25f475-96f0-407c-a2a7-cf15c4614a78" />
+
+### Email Message Extraction
+Switched to the Messages tab to inspect extracted email communications, uncovering notification messages sent from Facebook.
+![Email Message Extraction]<img width="823" height="580" alt="2 5" src="https://github.com/user-attachments/assets/3ecdb739-eeab-4ec9-a67c-1139ba4a35d1" />
+
+### Email Content & Attachment Extraction
+Opened an email sent by Branson Matheson to view message details regarding cloud host providers outside the US and inspect attached `.eml`/`.html` files.
+![Email Content & Attachment Extraction]<img width="820" height="574" alt="2 6" src="https://github.com/user-attachments/assets/8c56fb3d-0975-49e4-9f7e-18fd7ad4ef6c" />
+
+---
+
+## Part 3: Deep Session Inspection & Data Harvesting
+
+### Passive OS Fingerprinting
+Examined host `131.151.37.122` to view passive OS fingerprinting results (p0f and Satori TCP), identifying the operating system as Windows NT 4.0 / Windows 98.
+![Passive OS Fingerprinting]<img width="823" height="586" alt="3 1" src="https://github.com/user-attachments/assets/5c37c64c-c042-42e5-ab7d-9b348183a817" />
+
+### TCP Session Tracking
+Investigated active TCP session start timestamps and client port numbers for endpoint `131.151.32.91`.
+![TCP Session Tracking]<img width="821" height="584" alt="3 2" src="https://github.com/user-attachments/assets/2529b3f7-9623-4649-878d-c2cc87a36a00" />
+
+### IMAP Session Traffic Analysis
+Expanded incoming connection details on `131.151.37.122` to analyze IMAP email traffic operating on TCP port 143.
+![IMAP Session Traffic Analysis]<img width="821" height="583" alt="3 3" src="https://github.com/user-attachments/assets/d0bb7311-3fb3-48ef-8aee-033cc6147ba7" />
+
+### TCP Sequence Number Inspection
+Switched to the Frames tab view to inspect Frame 9 headers and extract the TCP Sequence Number (`2AD77400`).
+![TCP Sequence Number Inspection]<img width="823" height="577" alt="3 4" src="https://github.com/user-attachments/assets/576778e8-279e-495d-a95b-e8cd91a87f6f" />
+
+### Parameter Filtering
+Filtered parameters by `Content-Type` to review IMAP FETCH response frames and associated payload MIME types.
+![Parameter Filtering]<img width="822" height="583" alt="3 5" src="https://github.com/user-attachments/assets/f71bfbcd-6eff-4889-baa9-0f5abbc00d00" />
+
+### USB Driver Artifact Search
+Filtered reconstructed files using keyword `usb` to locate and extract ASIX USB 2.0 Ethernet adapter driver document `ed-usb2.0_ax88772.htm`.
+![USB Driver Artifact Search]<img width="821" height="578" alt="3 6" src="https://github.com/user-attachments/assets/5607ca9b-d299-410f-9161-e23e5b069b43" />
+
+### Lumia Graphic Asset Extraction
+Filtered files using keyword `lumia` to isolate image file `MMD_Lumia535_Sin.jpg` extracted from Akamai CDN servers.
+![Lumia Graphic Asset Extraction]<img width="820" height="587" alt="3 7" src="https://github.com/user-attachments/assets/6573850c-8e56-41dc-ac06-9c16f923bd10" />
+
+### Keyword File Search
+Searched reconstructed files with keyword `fish` to locate image files downloaded over TCP port 80 from host `50.22.95.9`.
+![Keyword File Search]<img width="823" height="584" alt="3 8" src="https://github.com/user-attachments/assets/307a7f80-68df-4f59-873d-2d04ef4fcd4f" />
+
+### Cleartext POP3 Password Extraction
+Reviewed captured credentials under the Credentials tab to extract plaintext POP3 login details for `homer.pwned.se@gmx.com` (Password: `spring2015`).
+![Cleartext POP3 Password Extraction]<img width="821" height="584" alt="3 9" src="https://github.com/user-attachments/assets/d63c201d-9ace-4fc8-ac5e-5c2b562e158b" />
+
+### DNS Resolution Lookup
+Filtered DNS queries for frame keyword `62001` to trace resolution requests for mail server host `pop.gmx.com`.
+![DNS Resolution Lookup]<img width="820" height="582" alt="3 10" src="https://github.com/user-attachments/assets/1ac902e6-f73e-4e54-9a74-15c43a754fab" />
+
+---
+
+## Part 4: Completion Verification
+
+### Room Completion Badge
+Final challenge completion screenshot demonstrating successful extraction of all forensic flags and room completion.
+![Room Completion Badge]<img width="1365" height="645" alt="4" src="https://github.com/user-attachments/assets/a9fede7d-8dc4-4830-beb4-1e48e4b0b3a6" />
