@@ -3245,3 +3245,80 @@ Filtered DNS queries for frame keyword `62001` to trace resolution requests for 
 ### Room Completion Badge
 Final challenge completion screenshot demonstrating successful extraction of all forensic flags and room completion.
 ![Room Completion Badge]<img width="1365" height="645" alt="4" src="https://github.com/user-attachments/assets/a9fede7d-8dc4-4830-beb4-1e48e4b0b3a6" />
+
+
+
+
+# 🛡️ Perimeter Log Analysis & Threat Detection Walkthrough
+
+## 📌 Project Overview
+This repository contains a comprehensive SIEM and log analysis investigation covering perimeter defense systems including **Firewalls, Web Application Firewalls (WAF), VPN Authentication servers, and Intrusion Detection Systems (IDS)**. By correlating multi-source log telemetry, this walkthrough traces an adversary from initial reconnaissance and brute-force attempts to successful internal compromise, C2 beaconing, and data exfiltration.
+
+### 🛠️ Tools & Telemetry Analyzed
+* **Log Sources:** `firewall.log`, `waf_logs.txt`, `vpn_auth.log`, `ids_alerts.log`
+* **Analysis Tools:** Linux CLI utilities (`grep`, `cut`, `sort`, `uniq`, `cat`, `Pluma Text Editor`)
+* **Threat Vectors Identified:** Sequential Port Scanning, SQL Injection (SQLi), VPN Password Spraying, Account Takeover, C2 Channel Establishment, and Data Exfiltration
+
+---
+
+## Part 1: Initial Perimeter Log Inspection
+
+### Firewall Port Scan Detection
+Inspected `firewall_logs.txt` in Pluma text editor to identify sequential TCP connection attempts from external IP `203.0.113.10` targeting various ports on `10.0.0.20`, confirming active port scanning.
+![Firewall Port Scan Detection]<img width="818" height="577" alt="1 1" src="https://github.com/user-attachments/assets/7b9b341a-e45e-4b78-97fc-ab0a7355cb9d" />
+
+### WAF SQL Injection Alert
+Analyzed `waf_logs.txt` to uncover web attack payloads, identifying a blocked SQL Injection attempt from IP `198.51.100.12` executing a `UNION SELECT user,pass FROM users` payload (Rule ID: 942100).
+![WAF SQL Injection Alert]<img width="819" height="576" alt="1 2" src="https://github.com/user-attachments/assets/c082b732-803c-4c30-9c26-209edfa9d441" />
+
+### VPN Brute Force Identification
+Reviewed initial entries in `vpn_logs.txt` to detect automated password spraying/brute force attempts targeting privileged accounts (`admin`, `administrator`, `root`) originating from `45.137.22.13`.
+![VPN Brute Force Identification]<img width="823" height="558" alt="1 3" src="https://github.com/user-attachments/assets/a6f8836a-f0d3-4896-a301-e881f36afa78" />
+
+### Persistent VPN Failure Tracking
+Continued tracking `45.137.22.13` within `vpn_logs.txt` to measure the scale of authentication attempts against common user accounts like `guest`, `user`, and `anonymous`.
+![Persistent VPN Failure Tracking]<img width="819" height="585" alt="1 4" src="https://github.com/user-attachments/assets/cab84830-3f4c-47fb-adf6-fd62753a6783" />
+
+---
+
+## Part 2: Terminal-Based Log Correlation & Intrusion Analysis
+
+### Firewall Blocked Rule Filtering
+Utilized terminal commands (`grep -i "block" firewall.log`) to isolate denied connections, revealing targeted port probes from `203.0.113.45` against high-value internal endpoints.
+![Firewall Blocked Rule Filtering]<img width="843" height="574" alt="2 1" src="https://github.com/user-attachments/assets/9a1f0a04-4c57-4a0b-9434-c75c1b624aff" />
+
+### Perimeter Scan Profiling
+Analyzed firewall blocked records to map recurring port scan patterns targeting SSH (22), SMB (445), and RDP (3389) ports across internal subnets (`10.0.0.20`, `10.0.0.51`, `10.0.0.60`).
+![Perimeter Scan Profiling]<img width="831" height="568" alt="2 2" src="https://github.com/user-attachments/assets/13300c28-8f6f-4e5a-ba0e-3ecf76b74f0f" />
+
+### VPN Failed Auth Aggregation
+Executed pipeline `cat vpn_auth.log | grep FAIL | cut -d' ' -f3 | sort -nr | uniq -c` to frequency-count failed logins, isolating `203.0.113.45` with 118 failed attempts targeting account `svc_backup`.
+![VPN Failed Auth Aggregation]<img width="823" height="566" alt="2 3" src="https://github.com/user-attachments/assets/227875d7-250b-4d70-be5e-1314db1e5e4d" />
+
+### Account Compromise Verification
+Filtered `vpn_auth.log` for `203.0.113.45` to identify the exact timestamp (`2025-09-03 02:19:40`) where brute-force succeeded, resulting in account takeover for `svc_backup` and internal IP assignment `10.0.0.23`.
+![Account Compromise Verification]<img width="812" height="558" alt="2 4" src="https://github.com/user-attachments/assets/26149480-04a0-447e-95d9-7f04e51b5a69" />
+
+### Firewall Whitelist Verification
+Analyzed baseline network activity using `grep "ALLOW"` on `firewall.log` to establish legitimate connection patterns across internal services.
+![Firewall Whitelist Verification]<img width="815" height="561" alt="2 5" src="https://github.com/user-attachments/assets/e5bd33a0-f632-4b1d-81f7-15bb59926c04" />
+
+### Target Host Activity Tracing
+Traced network traffic against host `10.0.0.60` (`cat firewall.log | grep 10.0.0.60`), identifying allowed external connections originating from external threat actor IP `198.51.100.77`.
+![Target Host Activity Tracing]<img width="820" height="558" alt="2 6" src="https://github.com/user-attachments/assets/bbd27745-a1fd-4605-80ec-3d2414e95270" />
+
+### IDS Alert Querying
+Queried Intrusion Detection System logs (`cat ids_alerts.log | grep 198.51.100.77`) to verify whether traffic associated with external IP `198.51.100.77` triggered security signatures.
+![IDS Alert Querying]<img width="830" height="591" alt="2 7" src="https://github.com/user-attachments/assets/673376f7-d865-4fbc-92ba-2c01b0903ed3" />
+
+### C2 Beaconing & Data Exfiltration Detection
+Analyzed IDS alerts to confirm active compromise: detected `ET TROJAN Possible C2 Beaconing` outbound from `10.0.0.60:30071` to `198.51.100.77:4444` and `ET INFO Possible HTTP POST Large Upload` exfiltration alerts from `10.0.0.51` to `198.51.100.77:8080`.
+![C2 Beaconing & Data Exfiltration Detection]<img width="822" height="589" alt="2 8" src="https://github.com/user-attachments/assets/3cfcdf34-1b05-4af9-8032-ee4b13b1bea5" />
+
+---
+
+## Part 3: Challenge Completion
+
+### TryHackMe Room Completion
+Successfully identified all malicious IPs, attack vectors, compromised accounts, and C2 exfiltration channels, completing all challenge objectives.
+![TryHackMe Room Completion]<img width="1365" height="645" alt="3" src="https://github.com/user-attachments/assets/f7f60719-083a-4084-a524-c1da657b5467" />
