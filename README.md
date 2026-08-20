@@ -3322,3 +3322,57 @@ Analyzed IDS alerts to confirm active compromise: detected `ET TROJAN Possible C
 ### TryHackMe Room Completion
 Successfully identified all malicious IPs, attack vectors, compromised accounts, and C2 exfiltration channels, completing all challenge objectives.
 ![TryHackMe Room Completion]<img width="1365" height="645" alt="3" src="https://github.com/user-attachments/assets/f7f60719-083a-4084-a524-c1da657b5467" />
+
+
+
+
+# 🛡️ Network Discovery Detection Walkthrough
+
+## 📌 Project Overview
+This repository details a security analysis walk-through focused on detecting network discovery activity—including ICMP ping sweeps and stealthy TCP port scans—using both Linux Command Line Interface (CLI) log parsing tools and the Elastic Stack (Kibana Discover).
+
+### 🛠️ Tools & Technologies Used
+* **Log Analysis Utilities:** `cut`, `uniq`, `head`, `cat`
+* **SIEM / Visualization:** Elastic Stack / Kibana Discover
+* **Telemetry Data:** Zeek Connection Logs (`zeek.conn`) formatted in CSV & JSON
+* **Detection Objectives:** Uncovering internal ICMP sweeps, external TCP SYN scans, and connection state anomalies (`S0`)
+
+---
+
+## Part 1: CLI Log Inspection & Traffic Parsing
+
+### CSV Log Directory & Structure Verification
+Navigated to `/Downloads/logs` and verified header fields across session CSV files (`log-session-0.csv`, `log-session-1.csv`, `log-session-2.csv`) using `head -n2` to examine Zeek connection fields (`id.orig_h`, `id.resp_h`, `conn_state`).
+![CSV Log Directory & Structure Verification]<img width="678" height="555" alt="1 1" src="https://github.com/user-attachments/assets/227960e1-6570-4ea1-9534-66b208b027a9" />
+
+### Internal Host Connection Volume Analysis
+Executed `cat log-session-2.csv | cut -d',' -f3 | uniq -c` to aggregate log entries, isolating host `192.168.230.127` responsible for 2,276 log events.
+![Internal Host Connection Volume Analysis]<img width="677" height="572" alt="1 2" src="https://github.com/user-attachments/assets/103a58d6-2d95-4aa6-b5a7-41606e22f23c" />
+
+### External Port Scan Trace
+Parsed `log-session-1.csv` using `cut -d',' -f3,4,5,6` to inspect source and destination pairings, revealing an external TCP port scan originating from `203.0.113.25:39120` against target `192.168.230.145` across multiple destination ports (`5922`, `5850`, `9500`, `57797`).
+![External Port Scan Trace]<img width="672" height="581" alt="1 3" src="https://github.com/user-attachments/assets/01e4e17f-bade-4629-8528-ad91571aa2e5" />
+
+---
+
+## Part 2: Elastic / Kibana SIEM Analysis
+
+### ICMP Host Discovery Ping Sweep
+Filtered events in Elastic Discover to trace internal host discovery, identifying an ICMP ping sweep initiated by `192.168.230.127` across sequential subnet IPs (`203.0.113.167` through `203.0.113.171`).
+![ICMP Host Discovery Ping Sweep]<img width="976" height="610" alt="2 1" src="https://github.com/user-attachments/assets/0640eb7a-529a-4445-9a77-93196d7d09ef" />
+
+### SYN Scan & Connection State Visualization
+Filtered 2,005 logs in Elastic Discover to analyze external port scanning from `203.0.113.25`. Noted the `zeek.conn.conn_state` tagged as `S0` (SYN sent, no response returned), confirming non-established scan probes.
+![SYN Scan & Connection State Visualization]<img width="977" height="589" alt="2 2" src="https://github.com/user-attachments/assets/f8549ea9-262a-4530-8eb7-fe2a944d4b6a" />
+
+### Network Protocol Distribution Analysis
+Inspected `network.protocol` field statistics in Elastic Discover across 4,279 dataset records to calculate overall traffic breakdown (94.0% TCP, 6.0% ICMP).
+![Network Protocol Distribution Analysis]<img width="973" height="587" alt="2 3" src="https://github.com/user-attachments/assets/de5f2b1a-82a8-4fcf-883e-edce8ac8346a" />
+
+---
+
+## Part 3: Verification & Summary
+
+### Module Completion
+Completed the TryHackMe **Network Discovery Detection** room after successfully identifying all network scanning vectors and telemetry signatures.
+![Module Completion]<img width="511" height="277" alt="3" src="https://github.com/user-attachments/assets/1c2888a2-0da0-487e-8cbe-ea05c850eab2" />
